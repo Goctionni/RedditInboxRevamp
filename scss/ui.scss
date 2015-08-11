@@ -1,0 +1,768 @@
+#header {
+    span.pagename.selected:before {
+        color: #000;
+        content: 'Revamped Inbox';
+    }
+    span.pagename.selected {
+        color: transparent;
+        width: 115px;
+        overflow: hidden;
+        display: inline-block;
+        white-space: nowrap;
+    }
+}
+
+body > #header {
+    position: fixed;
+    width: 100%;
+    top: 0;
+}
+
+body.rir-show-inbox .rir-left-panel .rir-link.rir-inbox:before,
+body.rir-show-saved .rir-left-panel .rir-link.rir-saved:before,
+body.rir-show-deleted .rir-left-panel .rir-link.rir-deleted:before {
+    position: absolute;
+    left: -10px;
+    width: 5px;
+    top: 0;
+    height: 100%;
+    display: block;
+    background-color: #F70;
+    content: '';
+}
+
+
+body > div.content {
+    
+    padding: 0;
+    margin: 0;
+    margin-top: 115px;
+    
+    > .menuarea, > #siteTable, > #progressIndicator, > form, > #classy-error {
+        display: none;
+    }
+    
+    .rir-content {
+
+        input[type="checkbox"] {
+            display: none;
+        }
+        input[type="checkbox"] + label {
+            position: relative;
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border: solid #BBB 1px;
+            vertical-align: text-bottom;
+            overflow: visible;
+            white-space: nowrap;
+            text-indent: 24px;
+            line-height: 16px;
+            
+            &:empty {
+                text-indent: 0;
+                &:before {
+                    margin-left: -5px!important;
+                }
+            }
+        }
+        input[type="checkbox"] + label:before {
+            position: absolute;
+            content: '';
+            transform-origin: 0px 0px;
+            transform: rotate(-40deg);
+            border: solid transparent 0px;
+            border-left: solid #666 3px;
+            border-bottom: solid #666 2px;
+            margin-top: 7px;
+            margin-left: -22px;
+            width: 0;
+            height: 0;
+            opacity: 0;
+            transition: opacity ease-out 0.3s 0s, width linear 0.1s 0.3s, height linear 0.1s 0.3s;
+        }
+        input[type="checkbox"]:checked + label:before {
+            width: 15px;
+            height: 7px;
+            opacity: 1;
+            transition: opacity ease-in 0.1s 0s, height linear 0.1s 0s, width linear 0.1s 0.15s;
+        }
+        
+        div {
+            box-sizing: border-box;
+        }
+        
+        .clear-after:after {
+            display: block;
+            content: '';
+            clear: both;
+        }
+        .rir-top-panel {
+            position: fixed;
+            top: 65px;
+            width: 100%;
+            background-color: #E5E5E5;
+            border-bottom: solid #CCC 1px;
+            height: 50px;
+            line-height: 50px;
+            padding-left: 15px;
+            padding-right: 15px;
+            z-index: 98;
+            
+            .rir-message-types {
+                float: left;
+                width: 200px;
+                height: 50px;
+            }
+            .rir-search-panel {
+                position: absolute;
+                left: 210px;
+                right: 550px;
+                overflow: visible;
+    
+                input {
+                    box-sizing: border-box;
+                    height: 28px;
+                    border-top-left-radius: 4px;
+                    border-bottom-left-radius: 4px;
+                    border: solid gray 1px;
+                    border-right-style: none;
+                    width: 100%;  
+                    padding-left: 10px;
+                }
+                button {
+                    box-sizing: border-box;
+                    position: absolute;
+                    height: 28px;
+                    top: 50%;
+                    margin-top: -14px;
+                    left: 100%;
+                    background: -webkit-linear-gradient(top,#4387fd,#4683ea);
+                    color: #FFF;
+                    border: solid transparent 1px;
+                    border-radius: 0px;
+                    border-top-right-radius: 4px;
+                    border-bottom-right-radius: 4px;
+                    cursor: default;
+                    padding-left: 10px;
+                    padding-right: 10px;                    
+                }
+            }
+            .rir-buttons-panel {
+                float: right;
+                height: 50px;
+                
+                .rir-left-button {
+                    border-top-right-radius: 0;
+                    border-bottom-right-radius: 0;
+                }
+                
+                .rir-right-button {
+                    border-top-left-radius: 0;
+                    border-bottom-left-radius: 0;
+                    margin-left: -5px;
+                }
+                
+                button {
+                    border: solid #ccc 1px;
+                    background-color: #F4F4F4;
+                    border-radius: 3px;
+                    border-bottom-width: 2px;
+                    border-bottom-color: #BBB;
+                    padding: 5px 10px;
+                    margin-left: 3px;
+                    color: #555;
+                    transition: all ease-in-out 0.15s;
+                    cursor: pointer;
+                    
+                    &:hover {
+                        background-color: FFF;
+                        border-bottom-color: #89A;
+                        color: #000;
+                    }
+                }
+            }
+        }
+        .rir-content-panels {
+            
+            font-family: Arial;
+            z-index: 5;
+            
+            .rir-left-panel {
+                float: left;
+                width: 200px;
+                min-height: 100px;
+                padding: 15px;
+                
+                > a {
+                    position: relative;
+                    display: block;
+                    color: #333;
+                    font-size: 12px;
+                    font-weight: bold;
+                    line-height: 2.3em;
+                    padding-left: 10px;
+                    margin-left: -5px;
+                    transition: background-color linear 0.1s;
+                    
+                    &:hover {
+                        background-color: #F6F6F6;
+                        color: #000;
+                    }
+                }
+                
+                .rir-contacts {
+                    h2 {
+                        margin-top: 15px;
+                        font-size: 16px;
+                        color: #999;
+                        border-bottom: solid #CCC 1px;
+                        padding-left: 5px;
+                        margin-left: -5px;   
+                        margin-bottom: 5px;
+                    }
+                    
+                    .rir-contact {
+                        height: 24px;
+                        padding-top: 4px;
+                        padding-bottom: 4px;
+                        padding-left: 6px;
+                        line-height: 16px;
+                        font-size: 12px;
+                        position: relative;
+                        cursor: default;
+                        
+                        &:hover {
+                            background-color: #F6F6F6;
+                            
+                            .rir-contact-buttons a {
+                                opacity: 1;
+                            }
+                        }
+                        
+                        .rir-contact-name {
+                            display: inline-block;
+                            width: 95px;
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                            cursor: default;
+                            color: #000;
+                        }
+
+                        .rir-contact-buttons {
+                            position: absolute;
+                            top: 4px;
+                            right: 4px;
+                            
+                            .rir-view-profile {
+                                background-position-x: 0px;
+                            }
+                            .rir-send-message {
+                                background-position-x: -16px;
+                            }
+                            .rir-show-messages {
+                                background-position-x: -32px;
+                            }
+
+                            a {
+                                opacity: 0.5;
+                                display: inline-block;
+                                width: 16px;
+                                height: 16px;
+                                background-image: url('chrome-extension://__MSG_@@extension_id__/images/icons.png');
+                                background-repeat: no-repeat;
+                                background-position-y: 0px;
+
+                                &:hover {
+                                    background-position-y: -16px;
+                                }
+                            }
+                            
+                            a + a {
+                                margin-left: 4px;
+                            }
+                        }
+                        
+                    }
+                }
+                h2 {
+                    
+                }
+            }
+            .rir-main-panel {
+                float: right;
+                width: 1700px;
+                min-height: 100px;
+                margin-left: -30px;
+                
+                .rir-message-row {
+                    background-color: #F5F5F5;
+                    border-bottom: solid #E5E5E5 1px;
+                    cursor: pointer;
+                    position: relative;
+                    
+                    div {
+                        height: 40px;
+                        line-height: 40px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        font-size: 13px;
+                    }
+                    
+                    .rir-checkbox {
+                        float: left;
+                        width: 50px;
+                        text-align: center;
+                        cursor: default;
+                        user-select: none;
+                        -webkit-user-select: none;
+                    }
+                    .rir-correspondent {
+                        float: left;
+                        width: 200px;
+                        color: #000;
+                    }
+                    .rir-subject-text {
+                        position: absolute;
+                        left: 250px;
+                        right: 110px;
+                        
+                        .rir-subject {
+                            display: inline;
+                            max-width: 1000px;
+                            overflow: hidden;
+                        }
+                        .rir-text {
+                            display: inline;
+                            opacity: 0.7;
+                            
+                            &:before {
+                                content: ' - ';
+                            }
+                        }
+                    }
+                    .rir-datetime {
+                        float: right;
+                        text-align: right;
+                        color: #000;
+                        width: 150px;
+                        padding-right: 15px;
+                    }
+                    
+                    &.rir-unread {
+                        background-color: #FFF;
+                        .rir-correspondent, .rir-subject {
+                            font-weight: bold;
+                        }
+                    }
+                    
+                    &.rir-row-checked {
+                        background-color: #fff8dc;
+                    }
+                }
+                
+                .rir-conversation {
+                    margin-top: 15px;
+                    font-size: 12px;
+                    position: relative;
+                    max-width: 995px;
+                    
+                    > h2.rir-conversation-title {
+                        font-size: 18px;
+                        font-weight: normal;
+                        padding-bottom: 10px;
+                        color: #222;
+                    }
+                    > button.rir-expand-all-btn {
+                        position: absolute;
+                        top: 5px;
+                        right: 5px;
+                        background-color: transparent;
+                        background-image: url('chrome-extension://__MSG_@@extension_id__/images/icons.png');
+                        background-position-x: -96px;
+                        background-position-y: 0px;
+                        background-repeat: no-repeat;
+                        width: 16px;
+                        height: 16px;
+                        border-style: none;
+                        
+                        &:hover {
+                            background-position-y: -16px;
+                            outline-style: none;
+                        }
+                        &:active, &:focus {
+                            outline-style: none;
+                        }
+                    }
+                    > div.rir-private-messages {
+                        
+                        border-top: solid #CCC 1px;
+                        
+                        .rir-private-message {
+                            
+                            border-bottom: solid #CCC 1px;
+                            
+                            .rir-pm-header {
+                                background-color: #FFF;
+                                border-bottom: solid #EEE 1px;
+                                padding: 10px;
+                                cursor: pointer;
+                                position: relative;
+                                
+                                .rir-title-text {
+                                    position: absolute;
+                                    overflow: hidden;
+                                    white-space: nowrap;
+                                    text-overflow: ellipsis;
+                                    left: 10px;
+                                    right: 110px;
+                                    
+                                    h4 {
+                                        font-size: 13px;
+                                        font-weight: bold;
+                                        color: #222;
+                                        display: inline;
+                                    }
+                                    .rir-pm-body-short {
+                                        display: none;
+                                    }
+                                }
+                                .rir-right {
+                                    float: right;
+                                    
+                                    button.rir-expand-collapse-btn {
+                                        background-color: transparent;
+                                        background-image: url('chrome-extension://__MSG_@@extension_id__/images/icons.png');
+                                        background-position-x: -80px;
+                                        background-position-y: 0px;
+                                        background-repeat: no-repeat;
+                                        width: 16px;
+                                        height: 16px;
+                                        border-style: none;
+                                        margin-left: 5px;
+                                        
+                                        &:active, &:focus, &:hover {
+                                            outline-style: none;
+                                        }
+                                    }
+                                }
+                                
+                                &:hover {
+                                    button.rir-expand-collapse-btn {
+                                        background-position-y: -16px;
+                                    }
+                                }
+                                &:after {
+                                    content: '';
+                                    display: block;
+                                    clear: both;
+                                }
+                                
+                            }
+                            .rir-pm-body {
+                                padding: 10px;
+                                padding-bottom: 30px;
+                                
+                                .md {
+                                    max-width: 970px;
+                                }
+                            }
+                            
+                            &.rir-collapsed {
+                                .rir-pm-header {
+                                    background-color: #F8F8F8;
+                                    border-bottom: solid #EEE 1px;
+                                    border-left: solid #EEE 1px;
+                                    border-right: solid #EEE 1px;
+                                    
+                                    .rir-pm-body-short {
+                                        display: inline;
+                                        color: #999;
+                                    }
+                                    .rir-pm-body-short:before {
+                                        content: ' - ';
+                                    }
+                                    
+                                    button.rir-expand-collapse-btn {
+                                        background-position-x: -64px;
+                                    }
+                                }
+                                .rir-pm-body {
+                                    display: none;
+                                }
+                            }
+                        }
+                    }
+                    > div.rir-conversation-response {
+                        padding: 10px;
+                        textarea.rir-conversation-input {
+                            box-sizing: border-box;
+                            font-family: Arial, sans-serif;
+                            display: block;
+                            min-width: 975px;
+                            max-width: 975px;
+                            height: 100px;    
+                            margin-bottom: 20px;
+                            padding: 10px;
+                        }
+                        #RirShowReplyPreview {
+                            float: left;
+                        }
+                        button.rir-conversation-reply-btn {
+                            float: right;
+                            height: 28px;
+                            background: -webkit-linear-gradient(top, rgb(250, 250, 250), rgb(235, 235, 235));
+                            color: #666;
+                            border: 1px solid #CCC;
+                            border-radius: 2px;
+                            cursor: pointer;
+                            width: 100px;
+                            margin-top: -6px;
+                            
+                            &:hover {
+                                background: -webkit-linear-gradient(top, rgb(252, 252, 252), rgb(240, 240, 240));
+                                color: #777;
+                            }
+                        }
+                        div.rir-conversation-preview {
+                            clear: both;
+                            display: none;
+                            border: solid #BBB 1px;
+                            max-width: 975px;
+                            margin-top: 20px;
+                            padding: 10px;
+                            
+                            &:before {
+                                content: 'Preview:';
+                                display: block;
+                                font-size: 13px;
+                                font-weight: bold;
+                                padding-bottom: 3px;
+                            }
+                            
+                            &:empty:after {
+                                content: 'No message to preview';
+                                color: #999;
+                            }
+                        }
+                        #RirShowReplyPreview:checked ~ .rir-conversation-preview {
+                            display: block;
+                        }
+                    }
+                }
+            }
+        }
+        
+    }
+}
+body > .rir-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.4);
+    z-index: 1000;
+    display: none;
+    opacity: 0;
+    transition: all ease-in-out 0.5s;
+    text-align: center;
+    white-space: nowrap;   
+    
+    &:before {
+        content: '';
+        display: inline-block;
+        height: 100%;
+        vertical-align: middle;
+        margin-right: -0.25em;
+    }
+    
+    &.show {
+        opacity: 1;
+    }
+    
+    > div.loading-message, > div.notification-message {
+        display: inline-block;
+        vertical-align: middle;
+        padding: 15px;
+        border-radius: 5px;
+        background-color: #000;
+        color: #FFF;
+        
+        .rir-loading-status {
+            display: block;
+            padding-top: 8px;
+            
+            &:empty {
+                display: none;
+            }
+        }
+    }
+}
+div.footer-parent {
+    display: none;
+}
+
+.rir-content {
+    &:empty:before {
+        content: 'Reddit Inbox Revamp is initializing';
+    }
+}
+
+.rir-loading-icon {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 100%;
+    border-top: solid #FFF 2px;
+    border-left: solid rgba(255,255,255,0.85) 2px;
+    border-bottom: solid rgba(255,255,255,0.7) 1px;
+    border-right: solid rgba(0,0,0,0) 2px;
+    animation: spin 1.5s infinite linear;
+    vertical-align: middle;
+    margin-right: 10px;
+}
+
+body.res-nightmode {
+    
+    .rir-content {
+        input[type="checkbox"] + label:before {
+            border-bottom-color: #FFF!important;
+            border-left-color: #FFF!important;
+        }
+    }
+    
+    .rir-top-panel {
+        background-color: #111!important;
+        border-bottom: solid #555 1px!important;
+        
+        .rir-search-panel {
+            input {
+                background-color: #333;
+                color: #EEE;
+                border-color: #666;
+            }
+            buttton {
+                background: -webkit-linear-gradient(top, rgb(55, 110, 188), rgb(53, 104, 171));
+            }
+        }
+        .rir-buttons-panel {
+            button {
+                background-color: #333!important;
+                color: #CCC!important;
+                border-color: #555!important;
+                
+                &:hover {
+                    border-bottom-color: #369!important;
+                }
+            }
+        }
+    }
+    .rir-left-panel {
+        & > a {
+            color: #CCC!important;
+
+            &:hover {
+                color: #FFF!important;
+                background-color: #000!important;
+            }
+        }
+        .rir-contacts {
+            .rir-contact {
+                &:hover {
+                    background-color: #000!important;
+                }
+                
+                a.rir-contact-name {
+                    color: #DDD!important;
+                }
+            }
+        }
+    }
+    .rir-main-panel {
+        .rir-message-row {
+            background-color: #222!important;
+            border-bottom-color: #666!important;
+            
+            .rir-correspondent, .rir-datetime {
+                color: #CCC!important;
+            }
+            
+            &.rir-unread {
+                background-color: #444!important;
+            }
+        }
+        
+        .rir-conversation {
+            h2.rir-conversation-title {
+                color: #EEE!important;
+            }
+            > .rir-private-messages {
+                
+                border-top-color: #666!important;
+                
+                .rir-private-message {
+                    border-bottom-color: #666!important;
+                    
+                    .rir-pm-header {
+                        background-color: #2C2C2C!important;
+                        border-left-color: #666!important;
+                        border-right-color: #666!important;
+                        border-bottom-color: #666!important;
+                        
+                        h4 {
+                            color: #EEE!important;
+                        }
+                    }
+                    
+                    &.rir-collapsed {
+                        border-bottom: solid #6F6F6F 1px!important;
+                        
+                        .rir-pm-header {
+                            background-color: #4C4C4C!important;
+                            border-bottom: solid #6F6F6F 1px!important;
+                            border-left: solid #6F6F6F 1px!important;
+                            border-right: solid #6F6F6F 1px!important;
+                        }
+                    }
+                    
+                    .rir-pm-body {
+                        .md {
+                            color: #EEE!important;
+                        }
+                    }
+                }
+            }
+            .rir-conversation-response {
+                textarea {
+                    background-color: #111;
+                    border-color: #444;
+                    color: #EEE;
+                }
+                .rir-conversation-reply-btn {
+                    background: none!important;
+                    background-color: #333!important;
+                    color: #CCC!important;
+                    border-color: #555!important;
+                    transition: all 0.2s ease-in-out;
+
+                    &:hover {
+                        border-color: #666!important;
+                        color: #EEE!important;
+                        background-color: #444;
+                    }
+                }
+                .rir-conversation-preview {
+                    color: #EEE;
+                }
+            }
+        }
+    }
+}
+
+@keyframes spin {
+    0% {transform: rotate(0deg);}
+    100% {transform: rotate(360deg);}
+}
