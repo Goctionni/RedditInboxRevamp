@@ -5,7 +5,8 @@ var rir_cfg = {
     maxInitialMessagesShown: 50,
     pageTitle: 'reddit.com: Revamped inbox',
     deleted: [],
-    saved: []
+    saved: [],
+    showModmail: true
 };
 
 if(typeof localStorage['RIR_CONFIG'] !== "undefined") {

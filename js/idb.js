@@ -15,9 +15,9 @@ var rir_db = {};
     
     var db;
     var db_tables = {
-        'privateMessages': { name: 'privateMessages', key: 'id', indexes: ['author', 'created_utc', 'first_message_name'], "columns": ["id", "author", "body", "body_html", "new", "created", "created_utc", "name", "dest", "subject", "first_message_name"]},
-        'commentReply': { name: 'commentReply', key: 'id', indexes: ['author', 'created_utc'], "columns": ["id", "author", "body", "body_html", "new", "created", "created_utc", "name", "context", "link_title", "subreddit", "parent_id"]},
-        'postReply': { name: 'postReply', key: 'id', indexes: ['author', 'created_utc'], "columns": ["id", "author", "body", "body_html", "new", "created", "created_utc", "name", "context", "link_title", "subreddit", "parent_id"]},
+        'privateMessages': { name: 'privateMessages', key: 'id', indexes: ['author', 'created_utc', 'first_message_name'], "columns": ["id", "author", "body", "body_html", "new", "created", "created_utc", "name", "dest", "subject", "first_message_name", "distinguished"]},
+        'commentReply': { name: 'commentReply', key: 'id', indexes: ['author', 'created_utc'], "columns": ["id", "author", "body", "body_html", "new", "created", "created_utc", "name", "context", "link_title", "subreddit", "parent_id", "distinguished"]},
+        'postReply': { name: 'postReply', key: 'id', indexes: ['author', 'created_utc'], "columns": ["id", "author", "body", "body_html", "new", "created", "created_utc", "name", "context", "link_title", "subreddit", "parent_id", "distinguished"]},
     };
     
     var mode = {
@@ -167,11 +167,17 @@ var rir_db = {};
         for(var i = 0; i < privateMessages.length; i++) {
             var obj = privateMessages[i];
             if(!conversations[obj.first_message_name]) {
-                conversations[obj.first_message_name] = {id: obj.first_message_name, subject: '', messages: [], text: obj.body, 'new': false, last_update: obj.created_utc };
+                conversations[obj.first_message_name] = {id: obj.first_message_name, modmail: false, subject: '', messages: [], text: obj.body, 'new': false, last_update: obj.created_utc };
             }
             conversations[obj.first_message_name].messages.push(obj);
             conversations[obj.first_message_name].subject = obj.subject;
-            if(obj['new']) conversations[obj.first_message_name]['new'] = true;
+            
+            if(obj['new']){
+                conversations[obj.first_message_name]['new'] = true;
+            }
+            if(obj.distinguished) {
+                conversations[obj.first_message_name].modmail = true;
+            }
 
             if(obj.author === getUsername()) { // Sent by me
                 conversations[obj.first_message_name].correspondent = obj.dest;
@@ -179,11 +185,14 @@ var rir_db = {};
             else if(obj.dest === getUsername()){ // Sent to me
                 conversations[obj.first_message_name].correspondent = obj.author;
             }
-            else if(obj.author[0] === '#') {  // Sent by a subreddit I moderate
-                conversations[obj.first_message_name].correspondent = obj.dest;
-            }
-            else { // Sent to a subreddit I moderate
-                conversations[obj.first_message_name].correspondent = obj.author;
+            else {
+                conversations[obj.first_message_name].modmail = true;                
+                if(obj.author[0] === '#') {     // Sent by a subreddit I moderate
+                    conversations[obj.first_message_name].correspondent = obj.dest;
+                }
+                else {                          // Sent to a subreddit I moderate
+                    conversations[obj.first_message_name].correspondent = obj.author;
+                }
             }
         }
         return ObjectValues(conversations);
@@ -218,7 +227,10 @@ var rir_db = {};
                 return callback(all);
             }
             
-            all.push(cursor.value);
+            var obj = cursor.value;
+            if(!obj.author) obj.author = "[unknown]";
+            
+            all.push(obj);
             cursor.continue();
         };
     }
@@ -234,6 +246,8 @@ var rir_db = {};
     }
     
     function addPrivateMessage(obj, callback){
+        if(!obj.author) obj.author = "[unknown]";
+        
         var store = getObjectStore(db_tables.privateMessages.name, mode.readwrite);
         try {
             var req = store.add(obj);

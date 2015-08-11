@@ -105,6 +105,7 @@ log(INFO, "Reddit inbox Revamp loading");
             var filteredConversations = conversations.slice();
             rir.model.searchFilter(filteredConversations);
             rir.model.directoryFilter(filteredConversations);
+            if(!rir_cfg.showModmail) rir.model.modmailFilter(filteredConversations);
             
             // Show conversations
             rir.view.addConversationsToInbox(filteredConversations);
@@ -503,13 +504,21 @@ log(INFO, "Reddit inbox Revamp loading");
             });
             return contactsArr;
         },
+        modmailFilter: function(conversations){
+            for(var i = 0; i < conversations.length; i++) {
+                var conversation = conversations[i];
+                if(conversation.modmail) {
+                    conversations.splice(i--, 1);
+                }
+            }
+        },
         directoryFilter: function(conversations){
             for(var i = 0; i < conversations.length; i++) {
                 var conversation = conversations[i];
-                
+
                 var saved = (rir_cfg.saved.indexOf(conversation.id) >= 0);
                 var deleted = (rir_cfg.deleted.indexOf(conversation.id) >= 0);
-                
+
                 if(rir.show === "saved" && !saved
                 || rir.show === "deleted" && !deleted
                 || rir.show !== "deleted" && deleted) {
