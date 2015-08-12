@@ -23,7 +23,7 @@
         {
             "matches": ["http://*.reddit.com/message/rir_*", "https://*.reddit.com/message/rir_*"],
             "css": ["css/ui.css"],
-            "js": ["js/jquery.min.js", "js/markdown.js", "js/constants.js", "js/config.js", "js/generic.js", "js/idb.js", "js/global.js", "js/inbox.js"],
+            "js": ["js/jquery.min.js", "js/snuownd.js", "js/constants.js", "js/config.js", "js/generic.js", "js/idb.js", "js/global.js", "js/inbox.js"],
             "run_at": "document_start",
             "all_frames": true
         }]

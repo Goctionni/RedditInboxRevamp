@@ -25,48 +25,49 @@ body.rir-show-deleted .rir-left-panel .rir-link.rir-deleted:before {
   background-color: #F70;
   content: ''; }
 
+.rir-content input[type="checkbox"], .rir-checkbox input[type="checkbox"] {
+  display: none; }
+.rir-content input[type="checkbox"] + label, .rir-checkbox input[type="checkbox"] + label {
+  position: relative;
+  display: inline-block;
+  width: 15px;
+  height: 15px;
+  border: solid #BBB 1px;
+  vertical-align: text-bottom;
+  overflow: visible;
+  white-space: nowrap;
+  text-indent: 24px;
+  line-height: 16px; }
+  .rir-content input[type="checkbox"] + label:empty, .rir-checkbox input[type="checkbox"] + label:empty {
+    text-indent: 0; }
+    .rir-content input[type="checkbox"] + label:empty:before, .rir-checkbox input[type="checkbox"] + label:empty:before {
+      margin-left: -5px !important; }
+.rir-content input[type="checkbox"] + label:before, .rir-checkbox input[type="checkbox"] + label:before {
+  position: absolute;
+  content: '';
+  transform-origin: 0px 0px;
+  transform: rotate(-40deg);
+  border: solid transparent 0px;
+  border-left: solid #666 3px;
+  border-bottom: solid #666 2px;
+  margin-top: 7px;
+  margin-left: -22px;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  transition: opacity ease-out 0.3s 0s, width linear 0.1s 0.3s, height linear 0.1s 0.3s; }
+.rir-content input[type="checkbox"]:checked + label:before, .rir-checkbox input[type="checkbox"]:checked + label:before {
+  width: 15px;
+  height: 7px;
+  opacity: 1;
+  transition: opacity ease-in 0.1s 0s, height linear 0.1s 0s, width linear 0.1s 0.15s; }
+
 body > div.content {
   padding: 0;
   margin: 0;
   margin-top: 115px; }
   body > div.content > .menuarea, body > div.content > #siteTable, body > div.content > #progressIndicator, body > div.content > form, body > div.content > #classy-error {
     display: none; }
-  body > div.content .rir-content input[type="checkbox"] {
-    display: none; }
-  body > div.content .rir-content input[type="checkbox"] + label {
-    position: relative;
-    display: inline-block;
-    width: 15px;
-    height: 15px;
-    border: solid #BBB 1px;
-    vertical-align: text-bottom;
-    overflow: visible;
-    white-space: nowrap;
-    text-indent: 24px;
-    line-height: 16px; }
-    body > div.content .rir-content input[type="checkbox"] + label:empty {
-      text-indent: 0; }
-      body > div.content .rir-content input[type="checkbox"] + label:empty:before {
-        margin-left: -5px !important; }
-  body > div.content .rir-content input[type="checkbox"] + label:before {
-    position: absolute;
-    content: '';
-    transform-origin: 0px 0px;
-    transform: rotate(-40deg);
-    border: solid transparent 0px;
-    border-left: solid #666 3px;
-    border-bottom: solid #666 2px;
-    margin-top: 7px;
-    margin-left: -22px;
-    width: 0;
-    height: 0;
-    opacity: 0;
-    transition: opacity ease-out 0.3s 0s, width linear 0.1s 0.3s, height linear 0.1s 0.3s; }
-  body > div.content .rir-content input[type="checkbox"]:checked + label:before {
-    width: 15px;
-    height: 7px;
-    opacity: 1;
-    transition: opacity ease-in 0.1s 0s, height linear 0.1s 0s, width linear 0.1s 0.15s; }
   body > div.content .rir-content div {
     box-sizing: border-box; }
   body > div.content .rir-content .clear-after:after {
@@ -128,6 +129,11 @@ body > div.content {
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
         margin-left: -5px; }
+      body > div.content .rir-content .rir-top-panel .rir-buttons-panel .rir-config-button {
+        padding-top: 3px;
+        padding-bottom: 0;
+        vertical-align: middle;
+        margin-top: -2px; }
       body > div.content .rir-content .rir-top-panel .rir-buttons-panel button {
         border: solid #ccc 1px;
         background-color: #F4F4F4;
@@ -415,18 +421,22 @@ body > .rir-overlay {
   opacity: 0;
   transition: all ease-in-out 0.5s;
   text-align: center;
-  white-space: nowrap; }
+  white-space: nowrap;
+  /* Hidden */ }
   body > .rir-overlay:before {
     content: '';
     display: inline-block;
     height: 100%;
     vertical-align: middle;
     margin-right: -0.25em; }
+  body > .rir-overlay.rir-light-overlay {
+    background-color: rgba(230, 230, 230, 0.2); }
   body > .rir-overlay.show {
     opacity: 1; }
-  body > .rir-overlay > div.loading-message, body > .rir-overlay > div.notification-message {
+  body > .rir-overlay > div {
     display: inline-block;
-    vertical-align: middle;
+    vertical-align: middle; }
+  body > .rir-overlay > div.loading-message, body > .rir-overlay > div.notification-message {
     padding: 15px;
     border-radius: 5px;
     background-color: #000;
@@ -436,6 +446,59 @@ body > .rir-overlay {
       padding-top: 8px; }
       body > .rir-overlay > div.loading-message .rir-loading-status:empty, body > .rir-overlay > div.notification-message .rir-loading-status:empty {
         display: none; }
+  body > .rir-overlay > div.rir-config {
+    position: absolute;
+    top: 110px;
+    right: 15px;
+    overflow: hidden;
+    background-color: #FFF;
+    border: solid #BBB 1px;
+    border-radius: 5px;
+    padding: 10px;
+    text-align: left;
+    width: 150px;
+    transition: all 0.4s ease-in-out; }
+    body > .rir-overlay > div.rir-config h2 {
+      color: #000;
+      font-size: 14px;
+      margin-top: -5px; }
+    body > .rir-overlay > div.rir-config * + h2 {
+      margin-top: 5px; }
+    body > .rir-overlay > div.rir-config .rir-checkbox {
+      padding: 3px; }
+      body > .rir-overlay > div.rir-config .rir-checkbox label {
+        font-size: 15px;
+        transform: scale(0.8);
+        color: #555;
+        cursor: pointer; }
+    body > .rir-overlay > div.rir-config button {
+      display: block;
+      border-style: none;
+      background-color: transparent;
+      box-sizing: border-box;
+      border-radius: 4px;
+      padding: 0;
+      margin: 0;
+      line-height: 2em;
+      text-align: left;
+      font-size: 12px;
+      font-weight: bold;
+      text-indent: 5px;
+      width: 100%;
+      color: #666; }
+      body > .rir-overlay > div.rir-config button:hover {
+        color: #234;
+        background-color: #F2F2F2; }
+  body > .rir-overlay > div.rir-config {
+    max-height: 0px;
+    padding: 0px;
+    border-width: 0px;
+    opacity: 0; }
+  body > .rir-overlay.show > div.rir-config {
+    max-height: 120px;
+    padding: 10px;
+    border-width: 1px;
+    opacity: 1; }
 
 div.footer-parent {
   display: none; }
@@ -456,7 +519,15 @@ div.footer-parent {
   vertical-align: middle;
   margin-right: 10px; }
 
-body.res-nightmode .rir-content input[type="checkbox"] + label:before {
+.rir-icon-cog {
+  background-image: url("chrome-extension://__MSG_@@extension_id__/images/icons.png");
+  background-position: -112px 0px;
+  width: 19px;
+  height: 19px;
+  background-repeat: no-repeat;
+  display: inline-block; }
+
+body.res-nightmode .rir-content input[type="checkbox"] + label:before, body.res-nightmode .rir-checkbox input[type="checkbox"] + label:before {
   border-bottom-color: #FFF !important;
   border-left-color: #FFF !important; }
 body.res-nightmode .rir-top-panel {
@@ -474,6 +545,9 @@ body.res-nightmode .rir-top-panel {
     border-color: #555 !important; }
     body.res-nightmode .rir-top-panel .rir-buttons-panel button:hover {
       border-bottom-color: #369 !important; }
+  body.res-nightmode .rir-top-panel .rir-buttons-panel .rir-config-button .rir-icon-cog {
+    background-position-x: -131px !important;
+    opacity: 0.85; }
 body.res-nightmode .rir-left-panel > a {
   color: #CCC !important; }
   body.res-nightmode .rir-left-panel > a:hover {
@@ -528,6 +602,17 @@ body.res-nightmode .rir-main-panel .rir-conversation .rir-conversation-response 
     background-color: #444; }
 body.res-nightmode .rir-main-panel .rir-conversation .rir-conversation-response .rir-conversation-preview {
   color: #EEE; }
+body.res-nightmode .rir-overlay.rir-light-overlay {
+  background-color: rgba(30, 30, 30, 0.2); }
+  body.res-nightmode .rir-overlay.rir-light-overlay .rir-config {
+    background-color: #222;
+    border-color: #666; }
+    body.res-nightmode .rir-overlay.rir-light-overlay .rir-config h2 {
+      color: #FFF; }
+    body.res-nightmode .rir-overlay.rir-light-overlay .rir-config label, body.res-nightmode .rir-overlay.rir-light-overlay .rir-config button {
+      color: #CCC; }
+    body.res-nightmode .rir-overlay.rir-light-overlay .rir-config button:hover {
+      background-color: #000; }
 
 @keyframes spin {
   0% {

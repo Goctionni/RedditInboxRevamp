@@ -24,6 +24,6 @@ rir_cfg_set = function(prop, val) {
 };
 rir_cfg_save = function(){
     localStorage['RIR_CONFIG'] = JSON.stringify(rir_cfg);
-}
+};
 
 var logLevel = ERROR | INFO;

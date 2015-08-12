@@ -9,7 +9,8 @@ log(INFO, "Reddit inbox Revamp loading");
         conversation: chrome.extension.getURL('template/conversation.html'),
         private_message: chrome.extension.getURL('template/private_message.html'),
         load_more_messages: chrome.extension.getURL('template/load_more_messages.html'),
-        load_more_contacts: chrome.extension.getURL('template/load_more_contacts.html')
+        load_more_contacts: chrome.extension.getURL('template/load_more_contacts.html'),
+        config: chrome.extension.getURL('template/config.html')
     };
 
     rir.init.funcs.push(rir.functions.DOMReady);
@@ -65,7 +66,7 @@ log(INFO, "Reddit inbox Revamp loading");
             }
             else {
                 $input.on('keyup', function(){
-                    $preview.html(rir.markdown.makeHtml($input.val()));
+                    $preview.html(rir.markdown.render($input.val()));
                 });
                 $submit.on('click', function(){
                     var text = $input.val();
@@ -97,7 +98,9 @@ log(INFO, "Reddit inbox Revamp loading");
             // Set conversation status: read
             rir.model.setConversationStatus(conversation, true);
         },
-        showInbox: function(conversations){
+        showInbox: function(conversations, hideOverlay){
+            if(typeof hideOverlay !== "boolean") hideOverlay = true;
+            
             // Empty panel
             rir.$e.mainPanel.empty();
             
@@ -116,8 +119,9 @@ log(INFO, "Reddit inbox Revamp loading");
 
             // Show contacts
             rir.view.updateContactList(conversations);
-
+            
             // Hide overlay
+            if(hideOverlay)
             rir.view.hideOverlay();        
         },
         setFavicon: function(){
@@ -268,9 +272,49 @@ log(INFO, "Reddit inbox Revamp loading");
             $('#RirUnsave').on('click', rir.controller.action.unsave);
             $('#RirMarkRead').on('click', rir.controller.action.markRead);
             $('#RirMarkUnread').on('click', rir.controller.action.markUnread);
+            $('#RirShowConfig').on('click', rir.view.showConfig);
+        },
+        showExportOptions: function(){
+            alert('Not yet implemented');
+        },
+        showConfig: function(){
+            var $config = $(rir.templates.config);
+            
+            var $showModMail = $config.find('#RirShowModMail');
+            $showModMail.prop('checked', rir_cfg.showModmail);
+            $showModMail.on('change', function(){
+                var checked = $showModMail.prop('checked');
+                rir_cfg_set('showModmail', checked);
+                rir.view.showInbox(rir.model.cache.conversations, false);
+            });
+            
+            $config.find('#RirResetInbox').on('click', function(){
+                rir.$e.overlay.empty().removeClass('rir-light-overlay').off();
+                rir.controller.resetInbox();
+            });
+            $config.find('#RirExportMessages').on('click', rir.view.showExportOptions);
+            $config.on('click', function(e){
+                e.stopPropagation();
+            });
+            
+            rir.$e.overlay.empty().append($config);
+            rir.view.showOverlay('rir-light-overlay', true);
+        },
+        showOverlay: function(addClass, clickToDismiss){
+            rir.$e.overlay.show();
+            setTimeout(function(){
+                rir.$e.overlay.addClass('show');
+            }, 10)
+            
+            if(typeof addClass === "string") {
+                rir.$e.overlay.addClass(addClass);
+            }
+            if(typeof clickToDismiss === "boolean" && clickToDismiss) {
+                rir.$e.overlay.on('click', rir.view.hideOverlay);
+            }
         },
         hideOverlay: function(){
-            rir.$e.overlay.off().removeClass('show');
+            rir.$e.overlay.off().removeClass('show rir-light-overlay');
             setTimeout(function(){
                 rir.$e.overlay.hide();
             }, 600);
@@ -286,7 +330,7 @@ log(INFO, "Reddit inbox Revamp loading");
             }
             else {
                 $element = $('<div class="loading-message">').text(message).prepend(rir.$e.loading.clone()).appendTo(rir.$e.overlay.empty());
-                rir.$e.overlay.show().addClass('show');
+                rir.view.showOverlay();
             }
             return $element;
         },
@@ -372,6 +416,20 @@ log(INFO, "Reddit inbox Revamp loading");
         }
     };
     rir.controller = {
+        resetInbox: function(){
+            rir.view.showLoading('Clearing inbox');
+            rir_db.clearInbox(function(){
+                var username = getUsername();
+                while(true){
+                    var index = rir_cfg.pmInboxInitialized.indexOf(username);
+                    if(index < 0) break;
+                    
+                    rir_cfg.pmInboxInitialized.splice(index, 1);
+                    rir_cfg_save();
+                }
+                rir.controller.reloadInbox();
+            });
+        },
         showMessageClick: function() {
             var conversation = $(this).data('conversation');
             history.pushState({}, rir_cfg.pageTitle, '/message/rir_conversation/' + conversation.id);
@@ -650,7 +708,7 @@ log(INFO, "Reddit inbox Revamp loading");
             conversations: []
         }
     };
-    rir.markdown = new Markdown.Converter();
+    rir.markdown = SnuOwnd.getParser();
     
     rir.init.start();
     rir.init.executeAfter(['DOMReady', 'preloadTemplatesReady'], function(){

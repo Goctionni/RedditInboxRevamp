@@ -61,6 +61,8 @@ var rir_db = {};
     rir_db.init = function(callback) {
         numPages = 0;
         numErrors = 0;
+        indexed = [];
+        
         if(rir_cfg.pmInboxInitialized.indexOf(getUsername()) < 0) {
             log(DEBUG, "Initializing private messages");
             rir_db.indexAllPrivateMessages(null, function(){
@@ -151,7 +153,7 @@ var rir_db = {};
             var msg = messages[i];
             var req = store.put(msg);
             req.onerror = function(e){
-                console.log(req);
+                log(ERROR, req);
                 errorhandler(e);
             };
             req.onsuccess = function(e){
@@ -175,10 +177,7 @@ var rir_db = {};
             if(obj['new']){
                 conversations[obj.first_message_name]['new'] = true;
             }
-            if(obj.distinguished) {
-                conversations[obj.first_message_name].modmail = true;
-            }
-
+            
             if(obj.author === getUsername()) { // Sent by me
                 conversations[obj.first_message_name].correspondent = obj.dest;
             }
@@ -194,6 +193,10 @@ var rir_db = {};
                     conversations[obj.first_message_name].correspondent = obj.author;
                 }
             }
+            // If the first message is distinguished as 'moderator' we'll also flag it modmail
+            if(obj.first_message_name === obj.name && obj.distinguished && obj.distinguished === "moderator") {
+                conversations[obj.first_message_name].modmail = true;
+            }
         }
         return ObjectValues(conversations);
     }
@@ -205,9 +208,11 @@ var rir_db = {};
         var req = store.index(index).openCursor(null, reverse ? 'prev' : undefined);
         req.onsuccess = function(e){
             var cursor = e.target.result;
-            if(!cursor) callback(null);
             
-            if(offset-- > 0) {
+            if(!cursor) {
+                callback(null);
+            }
+            else if(offset-- > 0) {
                 cursor.continue();
             }
             else {
@@ -336,14 +341,17 @@ var rir_db = {};
             .success(function(response){
                 var executeCallback = false;
                 var newReference = response.data[beforeAfter];
-                if(!!newReference) {
-                    rir_db.indexAllPrivateMessages(newReference, callback);
+                if(newReference) {
+                    rir_db.indexAllPrivateMessages(newReference, callback, before, forbiddenCallback);
                 }
                 else {
                     executeCallback = true;
                 }
+                
                 var listItems = parseListItems(response);
-                if(!listItems.length) return callback();
+                if(!listItems.length) {
+                    return callback();
+                }
                 
                 var conversationsAdded = 0;
                 for(var i = 0; i < listItems.length; i++) {
@@ -352,8 +360,8 @@ var rir_db = {};
                             // Page added
                             log(DEBUG, "Page added");
                             if(executeCallback && typeof callback === "function") {
-                                callback();
                                 status("All messages have been indexed");
+                                return callback();
                             }
                             else {
                                 var message = (++numPages === 1) ? ' page has been indexed' : ' pages have been indexed';
@@ -383,6 +391,10 @@ var rir_db = {};
                     }, 3000);
                 }
             });
+    };
+    
+    rir_db.clearInbox = function(callback){
+        clearObjectStore(db_tables.privateMessages.name, callback);
     };
     
     rir_db.indexNewPrivateMessages = function(callback, offset){

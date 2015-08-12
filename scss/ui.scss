@@ -31,6 +31,52 @@ body.rir-show-deleted .rir-left-panel .rir-link.rir-deleted:before {
     content: '';
 }
 
+.rir-content, .rir-checkbox {
+    input[type="checkbox"] {
+        display: none;
+    }
+    input[type="checkbox"] + label {
+        position: relative;
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        border: solid #BBB 1px;
+        vertical-align: text-bottom;
+        overflow: visible;
+        white-space: nowrap;
+        text-indent: 24px;
+        line-height: 16px;
+
+        &:empty {
+            text-indent: 0;
+            &:before {
+                margin-left: -5px!important;
+            }
+        }
+    }
+    input[type="checkbox"] + label:before {
+        position: absolute;
+        content: '';
+        transform-origin: 0px 0px;
+        transform: rotate(-40deg);
+        border: solid transparent 0px;
+        border-left: solid #666 3px;
+        border-bottom: solid #666 2px;
+        margin-top: 7px;
+        margin-left: -22px;
+        width: 0;
+        height: 0;
+        opacity: 0;
+        transition: opacity ease-out 0.3s 0s, width linear 0.1s 0.3s, height linear 0.1s 0.3s;
+    }
+    input[type="checkbox"]:checked + label:before {
+        width: 15px;
+        height: 7px;
+        opacity: 1;
+        transition: opacity ease-in 0.1s 0s, height linear 0.1s 0s, width linear 0.1s 0.15s;
+    }        
+}
+
 
 body > div.content {
     
@@ -43,50 +89,6 @@ body > div.content {
     }
     
     .rir-content {
-
-        input[type="checkbox"] {
-            display: none;
-        }
-        input[type="checkbox"] + label {
-            position: relative;
-            display: inline-block;
-            width: 15px;
-            height: 15px;
-            border: solid #BBB 1px;
-            vertical-align: text-bottom;
-            overflow: visible;
-            white-space: nowrap;
-            text-indent: 24px;
-            line-height: 16px;
-            
-            &:empty {
-                text-indent: 0;
-                &:before {
-                    margin-left: -5px!important;
-                }
-            }
-        }
-        input[type="checkbox"] + label:before {
-            position: absolute;
-            content: '';
-            transform-origin: 0px 0px;
-            transform: rotate(-40deg);
-            border: solid transparent 0px;
-            border-left: solid #666 3px;
-            border-bottom: solid #666 2px;
-            margin-top: 7px;
-            margin-left: -22px;
-            width: 0;
-            height: 0;
-            opacity: 0;
-            transition: opacity ease-out 0.3s 0s, width linear 0.1s 0.3s, height linear 0.1s 0.3s;
-        }
-        input[type="checkbox"]:checked + label:before {
-            width: 15px;
-            height: 7px;
-            opacity: 1;
-            transition: opacity ease-in 0.1s 0s, height linear 0.1s 0s, width linear 0.1s 0.15s;
-        }
         
         div {
             box-sizing: border-box;
@@ -161,6 +163,13 @@ body > div.content {
                     border-top-left-radius: 0;
                     border-bottom-left-radius: 0;
                     margin-left: -5px;
+                }
+                
+                .rir-config-button {
+                    padding-top: 3px;
+                    padding-bottom: 0;
+                    vertical-align: middle;
+                    margin-top: -2px;
                 }
                 
                 button {
@@ -579,13 +588,20 @@ body > .rir-overlay {
         margin-right: -0.25em;
     }
     
+    &.rir-light-overlay {
+        background-color: rgba(230,230,230,0.2);
+    }
+    
     &.show {
         opacity: 1;
     }
     
-    > div.loading-message, > div.notification-message {
+    > div {
         display: inline-block;
         vertical-align: middle;
+    }
+    
+    > div.loading-message, > div.notification-message {
         padding: 15px;
         border-radius: 5px;
         background-color: #000;
@@ -599,6 +615,74 @@ body > .rir-overlay {
                 display: none;
             }
         }
+    }
+    
+    > div.rir-config {
+        position: absolute;
+        top: 110px;
+        right: 15px;
+        overflow: hidden;
+        background-color: #FFF;
+        border: solid #BBB 1px;
+        border-radius: 5px;
+        padding: 10px;
+        text-align: left;
+        width: 150px;
+        transition: all 0.4s ease-in-out;
+        
+        h2 {
+            color: #000;
+            font-size: 14px;
+            margin-top: -5px;
+        }
+        * + h2 {
+            margin-top: 5px;
+        }
+        .rir-checkbox {
+            padding: 3px;
+            
+            label {
+                font-size: 15px;
+                transform: scale(0.8);
+                color: #555;                
+                cursor: pointer;
+            }
+        }
+        button {
+            display: block;
+            border-style: none;
+            background-color: transparent;
+            box-sizing: border-box;
+            border-radius: 4px;
+            padding: 0;
+            margin: 0;
+            line-height: 2em;
+            text-align: left;
+            font-size: 12px;
+            font-weight: bold;
+            text-indent: 5px;            
+            width: 100%;
+            color: #666;
+            
+            &:hover {
+                color: #234;
+                background-color: #F2F2F2;
+            }
+        }
+    }
+    
+    /* Hidden */
+    > div.rir-config {
+        max-height: 0px;
+        padding: 0px;
+        border-width: 0px;
+        opacity: 0;
+    }
+    &.show > div.rir-config {
+        max-height: 120px;
+        padding: 10px;
+        border-width: 1px;
+        opacity: 1;
     }
 }
 div.footer-parent {
@@ -625,15 +709,23 @@ div.footer-parent {
     margin-right: 10px;
 }
 
+.rir-icon-cog {
+    background-image: url('chrome-extension://__MSG_@@extension_id__/images/icons.png');
+    background-position: -112px 0px;
+    width: 19px;
+    height: 19px;
+    background-repeat: no-repeat;
+    display: inline-block;
+}
+
 body.res-nightmode {
     
-    .rir-content {
+    .rir-content, .rir-checkbox {
         input[type="checkbox"] + label:before {
             border-bottom-color: #FFF!important;
             border-left-color: #FFF!important;
         }
     }
-    
     .rir-top-panel {
         background-color: #111!important;
         border-bottom: solid #555 1px!important;
@@ -657,6 +749,10 @@ body.res-nightmode {
                 &:hover {
                     border-bottom-color: #369!important;
                 }
+            }
+            .rir-config-button .rir-icon-cog {
+                background-position-x: -131px!important;
+                opacity: 0.85;
             }
         }
     }
@@ -757,6 +853,25 @@ body.res-nightmode {
                 .rir-conversation-preview {
                     color: #EEE;
                 }
+            }
+        }
+    }
+    
+    .rir-overlay.rir-light-overlay {
+        background-color: rgba(30,30,30, 0.2);
+        
+        .rir-config {
+            background-color: #222;
+            border-color: #666;        
+            
+            h2 {
+                color: #FFF;
+            }
+            label, button {
+                color: #CCC;
+            }
+            button:hover {
+                background-color: #000;
             }
         }
     }
