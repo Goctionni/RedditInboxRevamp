@@ -1,6 +1,9 @@
 function getUsername(){
     return $('#header span.user > a').text();
 }
+function isLoggedIn(){
+    return (getUsername() !== "sign in or create an account");
+}
 
 function log(level) {
     if(!(logLevel & level)) return;

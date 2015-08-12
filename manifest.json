@@ -6,7 +6,7 @@
         "http://*.reddit.com/*", "https://*.reddit.com/*"
     ],
     "web_accessible_resources": [
-        "js/jquery.min.map", "template/*", "images/*"
+        "js/jquery.min.map", "template/*", "images/*", "Icons/16.png", "Icons/16-gray.png"
     ],
     "icons": {"16": "Icons/16.png",
         "48": "Icons/48.png",

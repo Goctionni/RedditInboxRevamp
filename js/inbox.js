@@ -101,6 +101,10 @@ log(INFO, "Reddit inbox Revamp loading");
             // Empty panel
             rir.$e.mainPanel.empty();
             
+            // Cache the fetched conversations
+            rir.model.cache.conversations = conversations;
+            rir.view.setFavicon();
+            
             // Filter conversations
             var filteredConversations = conversations.slice();
             rir.model.searchFilter(filteredConversations);
@@ -115,6 +119,26 @@ log(INFO, "Reddit inbox Revamp loading");
 
             // Hide overlay
             rir.view.hideOverlay();        
+        },
+        setFavicon: function(){
+            var conversations = rir.model.cache.conversations;
+            
+            // Set icon to colored version if there are new messages
+            var icon = '16-gray.png';
+            for(var i = 0; i < conversations.length; i++) {
+                if(conversations[i]['new']) {
+                    icon = '16.png';
+                    break;
+                }
+            }
+            
+            $('head link[rel="shortcut icon"]').remove();
+
+            var link = document.createElement('link');
+            link.type = 'image/png';
+            link.rel = 'shortcut icon';
+            link.href = chrome.extension.getURL('Icons/' + icon);
+            document.querySelector('head').appendChild(link);
         },
         update: function(){
             // Init search from URL
@@ -171,7 +195,20 @@ log(INFO, "Reddit inbox Revamp loading");
             $('<title>').text(rir_cfg.pageTitle);
             
             // Establish container for saved DOM elements
-            rir.$e = { body : $('body'), loading: $('<span class="rir-loading-icon">') };
+            rir.$e = {
+                body : $('body'),
+                loading: $('<span class="rir-loading-icon">'),
+                get statusText(){
+                    var $ele = $('.loading-message .rir-loading-status');
+                    if($ele.length > 0) return $ele;
+                    var $load = $('.loading-message');
+                    if($load.length > 0) {
+                        return $('<span class="rir-loading-status">').appendTo($load);
+                    }
+                    return $('<div>');
+                }
+            };
+            
             // "uh" is used to send messages
             rir.model.uh = rir.$e.body.find('input[name="uh"]').val();
             // If history.pushState has been used, popstate should trigger a view update
@@ -197,11 +234,17 @@ log(INFO, "Reddit inbox Revamp loading");
             // So that the entire page wont have to be redownloaded
             rir.$e.content.find('a.rir-link').on('click', function(e){
                 var url = $(this).attr('href');
-                history.pushState({}, rir_cfg.pageTitle, url);
+                var refresh = location.pathname === url;
                 rir.$e.search.val('');
-                rir.view.update();
-                
                 e.preventDefault();
+                
+                if(refresh) {
+                    rir.controller.reloadInbox();
+                }
+                else {
+                    history.pushState({}, rir_cfg.pageTitle, url);
+                    rir.view.update();
+                }
             });
 
             // Bind our searchbar
@@ -232,10 +275,19 @@ log(INFO, "Reddit inbox Revamp loading");
                 rir.$e.overlay.hide();
             }, 600);
         },
+        isLoading: function(){
+            return $('.rir-overlay.show .loading-message').length > 0;
+        },
         showLoading: function(message){
             if(message === undefined) message = 'Loading';
-            var $element = $('<div class="loading-message">').text(message).prepend(rir.$e.loading.clone()).appendTo(rir.$e.overlay.empty());
-            rir.$e.overlay.show().addClass('show');
+            var $element;
+            if(rir.view.isLoading()) {
+                $element = $('.rir-overlay.show .loading-message').text(message).prepend(rir.$e.loading.clone());
+            }
+            else {
+                $element = $('<div class="loading-message">').text(message).prepend(rir.$e.loading.clone()).appendTo(rir.$e.overlay.empty());
+                rir.$e.overlay.show().addClass('show');
+            }
             return $element;
         },
         showNotification: function(message, duration){
@@ -296,6 +348,17 @@ log(INFO, "Reddit inbox Revamp loading");
                 }
             }
         },
+        showStatus: function(statusMsg){
+            if(statusMsg !== false) {
+                rir.$e.statusText.text(statusMsg);
+            }
+            else {
+                rir.view.hideOverlay();
+                setTimeout(function(){
+                    rir.view.showNotification("The system failed too many times in retrieving messages, please try again at a later time.");
+                }, 1000);
+            }
+        },
         addLoadMoreElement: function(html, $container, callback, items){
             var $element = $(html).appendTo($container);
             var scrollCallback = function(){
@@ -317,6 +380,16 @@ log(INFO, "Reddit inbox Revamp loading");
             
             // Scroll to the top
             window.scrollTo(0, 0);
+        },
+        reloadInbox: function(){
+            rir.view.showLoading();
+            rir_db.setStatusFunction(rir.view.showStatus);
+            
+            rir_db.init(function(){
+                rir_db.setStatusFunction(null);
+                rir.view.update();
+                rir.view.setFavicon();
+            });
         },
         search: function(query){
             history.pushState({}, rir_cfg.pageTitle, '/message/rir_inbox?search=' + query);
@@ -572,6 +645,9 @@ log(INFO, "Reddit inbox Revamp loading");
                 }
             }
             return false;
+        },
+        cache: {
+            conversations: []
         }
     };
     rir.markdown = new Markdown.Converter();
@@ -580,6 +656,7 @@ log(INFO, "Reddit inbox Revamp loading");
     rir.init.executeAfter(['DOMReady', 'preloadTemplatesReady'], function(){
         // Don't do anything if it's a 503
         if(document.title.indexOf("Ow!") >= 0) return;
+        if(!isLoggedIn()) return;
         
         // The DOM is ready and templates have been preloaded
         
@@ -587,28 +664,12 @@ log(INFO, "Reddit inbox Revamp loading");
         rir.controller.parseUrl();
         
         // Initialize default layout elements
+        rir.view.setFavicon();
         rir.view.initLayout();
         rir.view.bindActionButtons();
-        var $statusText = $('<span>').addClass('rir-loading-status').appendTo(rir.view.showLoading());
+        rir.view.showLoading();
         
-        rir_db.openDb(getUsername(), function(){
-            
-            rir_db.setStatusFunction(function(statusMsg){
-                if(statusMsg === false) {
-                    rir.view.hideOverlay();
-                    setTimeout(function(){
-                        rir.view.showNotification("The system failed too many times in retrieving messages, please try again at a later time.");
-                    }, 1000);
-                }
-                else $statusText.text(statusMsg);
-            });
-            
-            rir_db.init(function(){
-                // When the database is ready, update the view
-                rir_db.setStatusFunction(null);
-                rir.view.update();
-            });
-        });
+        rir_db.openDb(getUsername(), rir.controller.reloadInbox);
     });
     
 })(jQuery);
