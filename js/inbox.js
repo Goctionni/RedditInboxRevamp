@@ -516,8 +516,9 @@ log(INFO, "Reddit inbox Revamp loading");
             
             var data = rir.controller.exportFormats[format](conversations, e);
             
-            var url = "data:text;charset=utf-8," + encodeURIComponent(data);
-            $ele.attr('href', url);
+            var dataBlob = new Blob([data], {type : 'text/plain'});
+            var downloadUrl = URL.createObjectURL(dataBlob);
+            this.href = downloadUrl;
         },
         exportFormats: {
             JSON: function(conversations){
