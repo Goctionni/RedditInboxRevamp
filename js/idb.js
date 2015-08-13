@@ -97,6 +97,16 @@ var rir_db = {};
         }
     }
     
+    function fixMessage(msg){
+        if(!msg.author) msg.author = "[unknown]";
+        if(isMessageHTMLEncoded(msg)) {
+            msg.subject = htmlDecode(msg.subject);
+            msg.body_html = htmlDecode(msg.body_html);
+            msg.body = htmlDecode(msg.body);
+        }
+        if(msg.created) delete msg.created;
+    }
+    
     function getObjAttributes(obj, attributes) {
         var r = {};
         for(var i = 0; i < attributes.length; i++){
@@ -135,6 +145,7 @@ var rir_db = {};
                 return callback(privateMessagesToConversations(messages)[0]);
             };
             
+            fixMessage(cursor.value);
             messages.push(cursor.value);
             cursor.continue();
         };
@@ -216,6 +227,7 @@ var rir_db = {};
                 cursor.continue();
             }
             else {
+                fixMessage(cursor.value);
                 callback(cursor.value);
             }
         };
@@ -233,8 +245,7 @@ var rir_db = {};
             }
             
             var obj = cursor.value;
-            if(!obj.author) obj.author = "[unknown]";
-            if(obj.created) delete obj.created;
+            fixMessage(obj);
             
             all.push(obj);
             cursor.continue();
@@ -335,9 +346,9 @@ var rir_db = {};
     
     rir_db.indexAllPrivateMessages = function(reference, callback, before, forbiddenCallback) {
         // Get private messages
-        var url = '/message/messages.json';
+        var url = '/message/messages.json?raw_json=1&limit=100';
         var beforeAfter = (!before ? 'after' : 'before');
-        if(!!reference) url += "?" + beforeAfter + "=" + reference;
+        if(!!reference) url += "&" + beforeAfter + "=" + reference;
         $.get(url)
             .success(function(response){
                 var executeCallback = false;

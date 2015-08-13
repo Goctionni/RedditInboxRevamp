@@ -26,6 +26,10 @@ function htmlDecode(str){
     return ele.innerText;
 }
 
+function isMessageHTMLEncoded(message){
+    return (message.body_html.length >= 21 && message.body_html.substring(0, 21) === '&lt;!-- SC_OFF --&gt;');
+}
+
 function ObjectValues(obj){
     var arr = [];
     var keys = Object.keys(obj);

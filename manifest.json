@@ -1,6 +1,6 @@
 {
     "name": "Reddit Inbox Revamp",
-    "version": "0.9.7",
+    "version": "0.9.8",
     "description": "Revamps the reddit inbox",
     "permissions": [
         "http://*.reddit.com/*", "https://*.reddit.com/*"

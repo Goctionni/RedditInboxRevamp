@@ -39,15 +39,15 @@ log(INFO, "Reddit inbox Revamp loading");
             $conversation.find('.rir-expand-all-btn').on('click', function(){
                 $messageArea.find('.rir-private-message').removeClass('rir-collapsed');
             });
-            $conversation.find('.rir-conversation-title').text(htmlDecode(conversation.subject));
+            $conversation.find('.rir-conversation-title').text(conversation.subject);
 
             var numMessages = conversation.messages.length;
             var responseId = null;
             for(var i = 1; i <= numMessages; i++) {
                 (function(pm){
                     var $pm = $(replaceAll(rir.templates.private_message, '{author}', pm.author));
-                    $pm.find('.rir-pm-body').html(htmlDecode(pm.body_html));
-                    $pm.find('.rir-pm-body-short').text(htmlDecode(pm.body));
+                    $pm.find('.rir-pm-body').html(pm.body_html);
+                    $pm.find('.rir-pm-body-short').text(pm.body);
                     $pm.find('.rir-message-date-string').text(longDateString(pm.created_utc));
                     $pm.find('.rir-pm-header').on('click', function(){
                         $pm.toggleClass('rir-collapsed');
@@ -167,7 +167,7 @@ log(INFO, "Reddit inbox Revamp loading");
             var unread = conversation['new'],
                 id = conversation.id,
                 correspondent = conversation.correspondent,
-                subject = htmlDecode(conversation.subject),
+                subject = conversation.subject,
                 message = conversation.text.replace('&amp;', "&").replace('&lt;', "<").replace('&gt;', ">"),
                 datetime = conversation.last_update;
 
@@ -567,7 +567,7 @@ log(INFO, "Reddit inbox Revamp loading");
                     sqlCols.push(JSON.stringify("" + parseInt(message.created_utc)));
                     sqlCols.push(JSON.stringify("" + message.subject));
                     sqlCols.push(JSON.stringify("" + message.body));
-                    sqlCols.push(JSON.stringify("" + htmlDecode(message.body_html)));
+                    sqlCols.push(JSON.stringify("" + message.body_html));
                     sqlCols.push(message['new'] ? '"1"' : '"0"');
                     sqlCols.push(JSON.stringify("" + message.distinguished));
                     
@@ -592,7 +592,6 @@ log(INFO, "Reddit inbox Revamp loading");
                     for(var j = 0; j < keys.length; j++) {
                         var k = keys[j];
                         var v = messages[i][k];
-                        if(k === 'body_html') v = htmlDecode(messages[i][k]);
                         if(k === 'created_utc') v = sysDateStr(messages[i][k] * 1000) + ' ' + sysTimeStr(messages[i][k] * 1000, ':') + ' UTC';
                         rowData.push(v);
                     }
