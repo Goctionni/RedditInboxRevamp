@@ -15,9 +15,9 @@ var rir_db = {};
     
     var db;
     var db_tables = {
-        'privateMessages': { name: 'privateMessages', key: 'id', indexes: ['author', 'created_utc', 'first_message_name'], "columns": ["id", "author", "body", "body_html", "new", "created", "created_utc", "name", "dest", "subject", "first_message_name", "distinguished"]},
-        'commentReply': { name: 'commentReply', key: 'id', indexes: ['author', 'created_utc'], "columns": ["id", "author", "body", "body_html", "new", "created", "created_utc", "name", "context", "link_title", "subreddit", "parent_id", "distinguished"]},
-        'postReply': { name: 'postReply', key: 'id', indexes: ['author', 'created_utc'], "columns": ["id", "author", "body", "body_html", "new", "created", "created_utc", "name", "context", "link_title", "subreddit", "parent_id", "distinguished"]},
+        'privateMessages': { name: 'privateMessages', key: 'id', indexes: ['author', 'created_utc', 'first_message_name'], "columns": ["id", "author", "body", "body_html", "new", "created_utc", "name", "dest", "subject", "first_message_name", "distinguished"]},
+        'commentReply': { name: 'commentReply', key: 'id', indexes: ['author', 'created_utc'], "columns": ["id", "author", "body", "body_html", "new", "created_utc", "name", "context", "link_title", "subreddit", "parent_id", "distinguished"]},
+        'postReply': { name: 'postReply', key: 'id', indexes: ['author', 'created_utc'], "columns": ["id", "author", "body", "body_html", "new", "created_utc", "name", "context", "link_title", "subreddit", "parent_id", "distinguished"]},
     };
     
     var mode = {
@@ -234,6 +234,7 @@ var rir_db = {};
             
             var obj = cursor.value;
             if(!obj.author) obj.author = "[unknown]";
+            if(obj.created) delete obj.created;
             
             all.push(obj);
             cursor.continue();

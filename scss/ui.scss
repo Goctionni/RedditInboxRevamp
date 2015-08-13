@@ -678,11 +678,68 @@ body > .rir-overlay {
         border-width: 0px;
         opacity: 0;
     }
+    /* Shown */
     &.show > div.rir-config {
         max-height: 120px;
         padding: 10px;
         border-width: 1px;
         opacity: 1;
+    }
+    
+    > div.rir-export-window {
+        background-color: #F2F2F2;
+        display: inline-block;
+        border-radius: 5px;
+        padding: 10px;
+        
+        h2 {
+            color: #000;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        .rir-export-settings {
+            text-align: left;
+            background-color: #FBFBFB;
+            padding: 10px;
+            border: solid #DDD 1px;
+            border-radius: 4px;
+            line-height: 1.8em;
+            margin-bottom: 5px;
+            font-size: 12px;
+            padding-bottom: 7px;
+            
+            label {
+                cursor: pointer;
+                color: #555;
+                &:hover {
+                    color: #222;
+                }
+            }
+        }
+        .rir-export-buttons {
+            a {
+                display: inline-block;
+                width: 100px;
+                padding: 4px 0px;
+                border: solid #CCC 1px;
+                background-color: #FFF;
+                border-bottom-width: 2px;
+                border-radius: 3px;
+                color: #666;
+                transition: border-bottom-color 0.2s ease-in-out;
+                
+                &:hover {
+                    border-bottom-color: #999;
+                }
+            }
+            a + a {
+                margin-left: 5px;
+            }
+            a[disabled] {
+                cursor: not-allowed;
+                opacity: 0.6;
+            }
+        }
     }
 }
 div.footer-parent {

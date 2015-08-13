@@ -10,7 +10,10 @@ log(INFO, "Reddit inbox Revamp loading");
         private_message: chrome.extension.getURL('template/private_message.html'),
         load_more_messages: chrome.extension.getURL('template/load_more_messages.html'),
         load_more_contacts: chrome.extension.getURL('template/load_more_contacts.html'),
-        config: chrome.extension.getURL('template/config.html')
+        config: chrome.extension.getURL('template/config.html'),
+        export_window: chrome.extension.getURL('template/export_window.html'),
+        export_to_mysql: chrome.extension.getURL('template/export_to_mysql.html'),
+        export_to_html: chrome.extension.getURL('template/export_to_html.html')
     };
 
     rir.init.funcs.push(rir.functions.DOMReady);
@@ -274,8 +277,27 @@ log(INFO, "Reddit inbox Revamp loading");
             $('#RirMarkUnread').on('click', rir.controller.action.markUnread);
             $('#RirShowConfig').on('click', rir.view.showConfig);
         },
-        showExportOptions: function(){
-            alert('Not yet implemented');
+        showExportOptions: function(e){
+            var html = rir.templates.export_window;
+            html = replaceAll(html, '{DATE}', sysDateStr());
+            html = replaceAll(html, '{TIME}', sysTimeStr());
+            
+            var $export = $(html);
+            $export.find('a').on('click', rir.controller.export);
+            $export.on('click', function(e){
+                e.stopPropagation();
+            });
+            
+            rir.$e.overlay.empty().removeClass('rir-light-overlay').append($export);
+            rir.view.showOverlay(null, true);
+            
+            // This should not be needed, but apparently it is
+            e.stopPropagation();
+            
+            // Make sure we have all conversations in cache
+            rir_db.getAllPMConversations(function(conversations){
+                rir.model.cache.conversations = conversations;
+            });
         },
         showConfig: function(){
             var $config = $(rir.templates.config);
@@ -478,6 +500,108 @@ log(INFO, "Reddit inbox Revamp loading");
                 delete rir._get['searchObj'];
             }
         },
+        export: function(e){
+            var $ele = $(this);
+            var format = $ele.data('format');
+            
+            var conversations = rir.model.cache.conversations.slice();
+            
+            // Filter deleted and modmail, if that's configged
+            if(!rir_cfg.showModmail) rir.model.modmailFilter(conversations);
+            rir.model.directoryFilter(conversations, 'inbox');
+            
+            if($('#RedactUsernames').prop('checked')) {
+                conversations = rir.model.names.substituteUsernames(conversations);
+            }
+            
+            var data = rir.controller.exportFormats[format](conversations, e);
+            
+            var url = "data:text;charset=utf-8," + encodeURIComponent(data);
+            $ele.attr('href', url);
+        },
+        exportFormats: {
+            JSON: function(conversations){
+                return JSON.stringify(conversations);
+            },
+            HTML: function(conversations, e){
+                e.stopPropagation();
+                e.preventDefault();
+                alert('Not yet implemented');
+            },
+            MySQL: function(conversations){
+                var sql = rir.templates.export_to_mysql;
+                var contexts = rir.model.getConversationContexts(conversations);
+                var messages = rir.model.removeConversationContexts(conversations);
+                
+                var contextKeys = ['id', 'correspondent', 'modmail', 'last_update', 'subject', 'text', 'new'];
+                var insertContextsRows = [];
+                for(var i = 0; i < contexts.length; i++) {
+                    var context = contexts[i];
+                    var sqlCols = [];
+                    sqlCols.push(JSON.stringify("" + context.id));
+                    sqlCols.push(JSON.stringify("" + context.correspondent));
+                    sqlCols.push(context.modmail ? '"1"' : '"0"');
+                    sqlCols.push(JSON.stringify("" + parseInt(context.last_update)));
+                    sqlCols.push(JSON.stringify("" + context.subject));
+                    sqlCols.push(JSON.stringify("" + context.text));
+                    sqlCols.push(context['new'] ? '"1"' : '"0"');
+                    
+                    insertContextsRows.push(sqlCols.join(', '));
+                }
+                
+                sql +=
+                    'INSERT INTO `redditPrivateMessageContexts` '
+                    + '(`' + contextKeys.join('`, `') + '`) '
+                    + ' VALUES (' + insertContextsRows.join('), (') + ');';
+                
+                var messageKeys = ['id', 'name', 'first_message_name', 'author', 'dest', 'created_utc', 'subject', 'body', 'body_html', 'new', 'distinguished'];
+                var insertMessageRows = [];
+                for(var i = 0; i < messages.length; i++) {
+                    var message = messages[i];
+                    var sqlCols = [];
+                    sqlCols.push(JSON.stringify("" + message.id));
+                    sqlCols.push(JSON.stringify("" + message.name));
+                    sqlCols.push(JSON.stringify("" + message.first_message_name));
+                    sqlCols.push(JSON.stringify("" + message.author));
+                    sqlCols.push(JSON.stringify("" + message.dest));
+                    sqlCols.push(JSON.stringify("" + parseInt(message.created_utc)));
+                    sqlCols.push(JSON.stringify("" + message.subject));
+                    sqlCols.push(JSON.stringify("" + message.body));
+                    sqlCols.push(JSON.stringify("" + htmlDecode(message.body_html)));
+                    sqlCols.push(message['new'] ? '"1"' : '"0"');
+                    sqlCols.push(JSON.stringify("" + message.distinguished));
+                    
+                    insertMessageRows.push(sqlCols.join(', '));
+                }
+                
+                sql +=
+                    'INSERT INTO `redditPrivateMessages` '
+                    + '(`' + messageKeys.join('`, `') + '`) '
+                    + ' VALUES (' + insertMessageRows.join('), (') + ');';
+                
+                return sql;
+            },
+            CSV: function(conversations){
+                var messages = rir.model.removeConversationContexts(conversations);
+                var sampleMessage = messages[0];
+                var keys = Object.keys(sampleMessage);
+                var csvRows = [keys];
+                
+                for(var i = 0; i < messages.length; i++) {
+                    var rowData = [];
+                    for(var j = 0; j < keys.length; j++) {
+                        var k = keys[j];
+                        var v = messages[i][k];
+                        if(k === 'body_html') v = htmlDecode(messages[i][k]);
+                        if(k === 'created_utc') v = sysDateStr(messages[i][k] * 1000) + ' ' + sysTimeStr(messages[i][k] * 1000, ':') + ' UTC';
+                        rowData.push(v);
+                    }
+                    csvRows.push(rowData);
+                }
+                
+                return array2DtoCSV(csvRows);
+            }
+        },
         action: {
             get conversations(){
                 if(rir.show === "conversation") {
@@ -643,16 +767,20 @@ log(INFO, "Reddit inbox Revamp loading");
                 }
             }
         },
-        directoryFilter: function(conversations){
+        directoryFilter: function(conversations, directory){
+            if(typeof directory === "undefined") {
+                directory = rir.show;
+            }
+            
             for(var i = 0; i < conversations.length; i++) {
                 var conversation = conversations[i];
 
                 var saved = (rir_cfg.saved.indexOf(conversation.id) >= 0);
                 var deleted = (rir_cfg.deleted.indexOf(conversation.id) >= 0);
 
-                if(rir.show === "saved" && !saved
-                || rir.show === "deleted" && !deleted
-                || rir.show !== "deleted" && deleted) {
+                if(directory === "saved" && !saved
+                || directory === "deleted" && !deleted
+                || directory !== "deleted" && deleted) {
                     conversations.splice(i--, 1);
                 }
             }
@@ -703,6 +831,95 @@ log(INFO, "Reddit inbox Revamp loading");
                 }
             }
             return false;
+        },
+        names: {
+            get generatedNames(){
+                var names = [];
+                var firstNames = [
+                    'Rock', 'Balloon', 'Clamp', 'Cork', 'Car',
+                    'Tooth', 'Stick', 'Card', 'Fork', 'Puddle',
+                    'Knife', 'Butter', 'Table', 'Box', 'Helmet',
+                    'Chalk', 'Shoe', 'Tomato', 'Broccoli', 'Watch',
+                    'Bottle', 'Glass', 'Flag', 'Pillow', 'Spoon',
+                    'Scizzors', 'Egg', 'Carrot', 'Bread', 'Drawer',
+                    'Wallet', 'Monitor', 'Plank', 'Floor', 'Lamp',
+                    'Body', 'Pipe', 'Filter', 'State', 'Park'
+                ];
+                var lastNames = [
+                    'Paper', 'Chain', 'Tile', 'Truck', 'Piano',
+                    'Milk', 'Salt', 'Page', 'Mirror', 'Can',
+                    'Ball', 'Brick', 'Tree', 'Shovel', 'Space',
+                    'Globe', 'Note', 'Pepper', 'Street', 'Town',
+                    'Leaf', 'Spiral', 'Light', 'Dark', 'Code',
+                    'Spring', 'Couch', 'Phone', 'Map', 'Bridge',
+                    'Sign', 'Pants', 'Shirt', 'Plane', 'Pear',
+                    'Bench', 'Flyer', 'Case', 'Chart', 'Door'
+                ];
+                
+                for(var i = 0; i < firstNames.length; i++) {
+                    for(var j = 0; j < lastNames.length; j++) {
+                        names.push(firstNames[i] + ' ' + lastNames[j]);
+                    }
+                }
+                return rir.model.names.generatedNames = array_shuffle(names);
+            },
+            extractUsernames: function(conversations){
+                var names = [];
+                for(var i = 0; i < conversations.length; i++){
+                    var messages = conversations[i].messages;
+                    for(var j = 0; j < messages.length; j++) {
+                        var msg = messages[j];
+                        
+                        if(names.indexOf(msg.author) < 0) names.push(msg.author);
+                        if(names.indexOf(msg.dest) < 0) names.push(msg.dest);
+                    }
+                }
+                return names;
+            },
+            getNameSubstitutes: function(names){
+                var substitutions = {};
+                for(var i = 0; i < names.length; i++){
+                    var name = names[i];
+                    var substitute = rir.model.names.generatedNames[i];
+                    substitutions[name] = substitute;
+                }
+                return substitutions;
+            },
+            substituteUsernames: function(conversations){
+                var names = rir.model.names.extractUsernames(conversations);
+                var substitutions = rir.model.names.getNameSubstitutes(names);
+                
+                var copy = conversations.slice();
+                for(var i = 0; i < copy.length; i++) {
+                    var c = copy[i];
+                    c.correspondent = substitutions[c.correspondent];
+                    
+                    for(var j = 0; j < c.messages.length; j++) {
+                        c.messages[j].author = substitutions[c.messages[j].author];
+                        c.messages[j].dest = substitutions[c.messages[j].dest];
+                    }
+                }
+                return copy;
+            }
+        },
+        getConversationContexts: function(conversations){
+            var contexts = [];
+            for(var i = 0; i < conversations.length; i++) {
+                var context = JSON.parse(JSON.stringify(conversations[i]));
+                delete context.messages;
+                contexts.push(context);
+            }
+            return contexts;
+        },
+        removeConversationContexts: function(conversations){
+            var messages = [];
+            for(var i = 0; i < conversations.length; i++) {
+                var conversation = conversations[i];
+                for(var j = 0; j < conversation.messages.length; j++) {
+                    messages.push(conversation.messages[j]);
+                }
+            }
+            return messages;
         },
         cache: {
             conversations: []

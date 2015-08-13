@@ -422,7 +422,8 @@ body > .rir-overlay {
   transition: all ease-in-out 0.5s;
   text-align: center;
   white-space: nowrap;
-  /* Hidden */ }
+  /* Hidden */
+  /* Shown */ }
   body > .rir-overlay:before {
     content: '';
     display: inline-block;
@@ -499,6 +500,47 @@ body > .rir-overlay {
     padding: 10px;
     border-width: 1px;
     opacity: 1; }
+  body > .rir-overlay > div.rir-export-window {
+    background-color: #F2F2F2;
+    display: inline-block;
+    border-radius: 5px;
+    padding: 10px; }
+    body > .rir-overlay > div.rir-export-window h2 {
+      color: #000;
+      font-size: 20px;
+      margin-bottom: 10px; }
+    body > .rir-overlay > div.rir-export-window .rir-export-settings {
+      text-align: left;
+      background-color: #FBFBFB;
+      padding: 10px;
+      border: solid #DDD 1px;
+      border-radius: 4px;
+      line-height: 1.8em;
+      margin-bottom: 5px;
+      font-size: 12px;
+      padding-bottom: 7px; }
+      body > .rir-overlay > div.rir-export-window .rir-export-settings label {
+        cursor: pointer;
+        color: #555; }
+        body > .rir-overlay > div.rir-export-window .rir-export-settings label:hover {
+          color: #222; }
+    body > .rir-overlay > div.rir-export-window .rir-export-buttons a {
+      display: inline-block;
+      width: 100px;
+      padding: 4px 0px;
+      border: solid #CCC 1px;
+      background-color: #FFF;
+      border-bottom-width: 2px;
+      border-radius: 3px;
+      color: #666;
+      transition: border-bottom-color 0.2s ease-in-out; }
+      body > .rir-overlay > div.rir-export-window .rir-export-buttons a:hover {
+        border-bottom-color: #999; }
+    body > .rir-overlay > div.rir-export-window .rir-export-buttons a + a {
+      margin-left: 5px; }
+    body > .rir-overlay > div.rir-export-window .rir-export-buttons a[disabled] {
+      cursor: not-allowed;
+      opacity: 0.6; }
 
 div.footer-parent {
   display: none; }

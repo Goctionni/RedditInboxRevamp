@@ -40,7 +40,28 @@ function escapeRegExp(string) {
 }
 
 function replaceAll(string, find, replace) {
-  return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+    string = "" + string;
+    return string.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+}
+
+function CSVEscapeValue(str){
+    //str = replaceAll(str, '\\', '\\\\');
+    //str = replaceAll(str, '"', '\\"');
+    //return replaceAll(JSON.stringify("" + str), ';', '\;');
+    return '"' + replaceAll(str, '"', '""') + '"';
+}
+
+function array2DtoCSV(arr){
+    var csvSeparator = ';';
+    var output = '';
+    for(var i = 0; i < arr.length; i++) {
+        var row = arr[i];
+        for(var j = 0; j < row.length; j++) {
+            output += CSVEscapeValue(row[j]) + csvSeparator;
+        }
+        output += "\r\n";
+    }
+    return output;
 }
 
 function parseQueryString(str){
@@ -98,6 +119,41 @@ function getTime(){
     return new Date().getTime();
 }
 
+function sysDateStr(date){
+    if(typeof d === "undefined") {
+        date = new Date();
+    }
+    var str = date.getFullYear() + '-';
+    
+    var m = date.getMonth() + 1;
+    if(m < 10) m = "0" + m;
+    str += m + '-';
+    
+    var d = date.getDate();
+    if(d < 10) d = "0" + d;
+    str += d;
+    
+    return str;
+}
+
+function sysTimeStr(date, sep){
+    if(typeof sep !== "string") sep = '.';
+    
+    if(typeof d === "undefined") {
+        date = new Date();
+    }
+    var h = date.getHours();
+    if(h < 10) h = "0" + h;
+    
+    var m = date.getMinutes();
+    if(m < 10) m = "0" + m;
+    
+    var s = date.getSeconds();
+    if(s < 10) s = "0" + s;
+    
+    return h + sep + m + sep + s;
+}
+
 function dateString(datetime) {
     var d = new Date(datetime * 1000);
     var dY = d.getFullYear();
@@ -121,6 +177,17 @@ function dateString(datetime) {
 
 function longDateString(datetime){
     return dateString(datetime);
+}
+
+function array_shuffle(input){
+    var output = [];
+    var copy = input.slice();
+    while(copy.length > 0) {
+        var r = Math.floor(Math.random() * copy.length);
+        var item = copy.splice(r, 1)[0];
+        output.push(item);
+    }
+    return output;
 }
 
 function dummyFunc(){}

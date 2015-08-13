@@ -1,0 +1,35 @@
+CREATE TABLE IF NOT EXISTS `redditPrivateMessageContexts` (
+  `id` varchar(20) NOT NULL,
+  `correspondent` varchar(20) NOT NULL,
+  `modmail` tinyint(1) NOT NULL,
+  `last_update` int(11) NOT NULL,
+  `subject` varchar(255) NOT NULL,
+  `text` text NOT NULL,
+  `new` tinyint(1) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `correspondent` (`correspondent`),
+  KEY `last_update` (`last_update`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `redditPrivateMessages` (
+  `id` varchar(20) NOT NULL,
+  `name` varchar(20) NOT NULL,
+  `first_message_name` varchar(20) NOT NULL,
+  `author` varchar(20) NOT NULL,
+  `dest` varchar(20) NOT NULL,
+  `created_utc` int(11) NOT NULL,
+  `subject` varchar(255) NOT NULL,
+  `body` text NOT NULL,
+  `body_html` text NOT NULL,
+  `new` tinyint(1) NOT NULL,
+  `distinguished` varchar(32) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `first_message_name` (`first_message_name`),
+  KEY `author` (`author`),
+  KEY `dest` (`dest`),
+  KEY `created_utc` (`created_utc`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `redditPrivateMessages`
+  ADD CONSTRAINT `redditPrivateMessages_ibfk_1` FOREIGN KEY (`first_message_name`) REFERENCES `redditPrivateMessageContexts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
