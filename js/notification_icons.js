@@ -1,24 +1,5 @@
+window.addEventListener("neverEndingLoad", function(e) { console.log(e); });
 document.addEventListener("DOMContentLoaded", function() {
-    
-    // No mail:
-    //<a title="no new mail!" href="/message/inbox/" class="nohavemail" id="mail"></a>
-    //<a id="mailCount" href="/message/unread/"></a>
-    
-    // Mail:
-    //<a title="new mail!" href="https://www.reddit.com/message/unread/" class="havemail" id="mail">messages</a>
-    //<a href="https://www.reddit.com/message/unread/" class="message-count">8</a>
-    
-    function replaceHref(from, to) {
-        var elements = document.querySelectorAll('[href$="' + from + '"]');
-        for(var i = 0; i < elements.length; i++) {
-            elements[i].setAttribute('href', to);
-        }
-    }
-    
-    // Replace All links to the message inbox to rir_inbox
-    replaceHref('/message/messages/', '/message/rir_inbox/');
-    // Replace All links to /unread to /inbox
-    // replaceHref('/message/unread/', '/message/inbox/');
     
     var ori_mail = document.querySelector('#mail');
     var prev_element = ori_mail.previousSibling;
@@ -114,4 +95,9 @@ document.addEventListener("DOMContentLoaded", function() {
     
     setInterval(updateMessageCount, 500);
     updateMessageCount();
+    
+    // Add RIR class to body element and emit event
+    document.querySelector('body').classList.add('rir');
+    window.dispatchEvent(new CustomEvent('rir-loaded', {}));
+    
 });

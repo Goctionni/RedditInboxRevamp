@@ -384,27 +384,46 @@ body > div.content {
                         padding-bottom: 10px;
                         color: #222;
                     }
-                    > button.rir-expand-all-btn {
+                    
+                    > .rir-conversation-controls {
                         position: absolute;
                         top: 5px;
                         right: 5px;
-                        background-color: transparent;
-                        background-image: url('chrome-extension://__MSG_@@extension_id__/images/icons.png');
-                        background-position-x: -96px;
-                        background-position-y: 0px;
-                        background-repeat: no-repeat;
-                        width: 16px;
-                        height: 16px;
-                        border-style: none;
                         
-                        &:hover {
-                            background-position-y: -16px;
+                        #RirExportConversation {
+                            position: relative;
+                            top: -2px;
+                            right: 5px;
+                            border-style: none;
+                            background-color: transparent;
+                            color: #888;
                             outline-style: none;
+                            
+                            &:hover {
+                                color: #444;
+                            }
                         }
-                        &:active, &:focus {
-                            outline-style: none;
+                        
+                        button.rir-expand-all-btn {
+                            background-color: transparent;
+                            background-image: url('chrome-extension://__MSG_@@extension_id__/images/icons.png');
+                            background-position-x: -96px;
+                            background-position-y: 0px;
+                            background-repeat: no-repeat;
+                            width: 16px;
+                            height: 16px;
+                            border-style: none;
+
+                            &:hover {
+                                background-position-y: -16px;
+                                outline-style: none;
+                            }
+                            &:active, &:focus {
+                                outline-style: none;
+                            }
                         }
                     }
+                    
                     > div.rir-private-messages {
                         
                         border-top: solid #CCC 1px;

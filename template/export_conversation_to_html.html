@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>TODO supply a title</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style type="text/css">
+            body {
+                margin-top: 15px;
+                font-size: 12px;
+                position: relative;
+                max-width: 995px;
+                font-family: Arial;
+            }
+            body > h2.rir-conversation-title {
+                font-size: 18px;
+                font-weight: normal;
+                padding-bottom: 10px;
+                color: #222; }
+            body > .rir-conversation-controls {
+                position: absolute;
+                top: 5px;
+                right: 5px; }
+            body > .rir-conversation-controls #RirExportConversation {
+                position: relative;
+                top: -2px;
+                right: 5px;
+                border-style: none;
+                background-color: transparent;
+                color: #888;
+                outline-style: none; }
+            body > .rir-conversation-controls #RirExportConversation:hover {
+                color: #444; }
+            body > .rir-conversation-controls button.rir-expand-all-btn {
+                background-color: transparent;
+                background-image: url("chrome-extension://__MSG_@@extension_id__/images/icons.png");
+                background-position-x: -96px;
+                background-position-y: 0px;
+                background-repeat: no-repeat;
+                width: 16px;
+                height: 16px;
+                border-style: none; }
+            body > .rir-conversation-controls button.rir-expand-all-btn:hover {
+                background-position-y: -16px;
+                outline-style: none; }
+            body > .rir-conversation-controls button.rir-expand-all-btn:active, body > .rir-conversation-controls button.rir-expand-all-btn:focus {
+                outline-style: none; }
+            body > div.rir-private-messages {
+                border-top: solid #CCC 1px; }
+            body > div.rir-private-messages .rir-private-message {
+                border-bottom: solid #CCC 1px; }
+            body > div.rir-private-messages .rir-private-message .rir-pm-header {
+                background-color: #FFF;
+                border-bottom: solid #EEE 1px;
+                padding: 10px;
+                cursor: pointer;
+                position: relative; }
+            body > div.rir-private-messages .rir-private-message .rir-pm-header .rir-title-text {
+                position: absolute;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+                left: 10px;
+                right: 110px; }
+            body > div.rir-private-messages .rir-private-message .rir-pm-header .rir-title-text h4 {
+                font-size: 13px;
+                font-weight: bold;
+                color: #222;
+                display: inline; }
+            body > div.rir-private-messages .rir-private-message .rir-pm-header .rir-title-text .rir-pm-body-short {
+                display: none; }
+            body > div.rir-private-messages .rir-private-message .rir-pm-header .rir-right {
+                float: right; }
+            body > div.rir-private-messages .rir-private-message .rir-pm-header .rir-right button.rir-expand-collapse-btn {
+                background-color: transparent;
+                background-image: url("chrome-extension://__MSG_@@extension_id__/images/icons.png");
+                background-position-x: -80px;
+                background-position-y: 0px;
+                background-repeat: no-repeat;
+                width: 16px;
+                height: 16px;
+                border-style: none;
+                margin-left: 5px; }
+            body > div.rir-private-messages .rir-private-message .rir-pm-header .rir-right button.rir-expand-collapse-btn:active, body > div.rir-private-messages .rir-private-message .rir-pm-header .rir-right button.rir-expand-collapse-btn:focus, body > div.rir-private-messages .rir-private-message .rir-pm-header .rir-right button.rir-expand-collapse-btn:hover {
+                outline-style: none; }
+            body > div.rir-private-messages .rir-private-message .rir-pm-header:hover button.rir-expand-collapse-btn {
+                background-position-y: -16px; }
+            body > div.rir-private-messages .rir-private-message .rir-pm-header:after {
+                content: '';
+                display: block;
+                clear: both; }
+            body > div.rir-private-messages .rir-private-message .rir-pm-body {
+                padding: 10px;
+                padding-bottom: 30px; }
+            body > div.rir-private-messages .rir-private-message .rir-pm-body .md {
+                max-width: 970px; }
+            body > div.rir-private-messages .rir-private-message.rir-collapsed .rir-pm-header {
+                background-color: #F8F8F8;
+                border-bottom: solid #EEE 1px;
+                border-left: solid #EEE 1px;
+                border-right: solid #EEE 1px; }
+            body > div.rir-private-messages .rir-private-message.rir-collapsed .rir-pm-header .rir-pm-body-short {
+                display: inline;
+                color: #999; }
+            body > div.rir-private-messages .rir-private-message.rir-collapsed .rir-pm-header .rir-pm-body-short:before {
+                content: ' - '; }
+            body > div.rir-private-messages .rir-private-message.rir-collapsed .rir-pm-header button.rir-expand-collapse-btn {
+                background-position-x: -64px; }
+            body > div.rir-private-messages .rir-private-message.rir-collapsed .rir-pm-body {
+                display: none; }
+            body > div.rir-conversation-response {
+                padding: 10px; }
+            body > div.rir-conversation-response textarea.rir-conversation-input {
+                box-sizing: border-box;
+                font-family: Arial, sans-serif;
+                display: block;
+                min-width: 975px;
+                max-width: 975px;
+                height: 100px;
+                margin-bottom: 20px;
+                padding: 10px; }
+            body > div.rir-conversation-response #RirShowReplyPreview {
+                float: left; }
+            body > div.rir-conversation-response button.rir-conversation-reply-btn {
+                float: right;
+                height: 28px;
+                background: -webkit-linear-gradient(top, #fafafa, #ebebeb);
+                color: #666;
+                border: 1px solid #CCC;
+                border-radius: 2px;
+                cursor: pointer;
+                width: 100px;
+                margin-top: -6px; }
+            body > div.rir-conversation-response button.rir-conversation-reply-btn:hover {
+                background: -webkit-linear-gradient(top, #fcfcfc, #f0f0f0);
+                color: #777; }
+            body > div.rir-conversation-response div.rir-conversation-preview {
+                clear: both;
+                display: none;
+                border: solid #BBB 1px;
+                max-width: 975px;
+                margin-top: 20px;
+                padding: 10px; }
+            body > div.rir-conversation-response div.rir-conversation-preview:before {
+                content: 'Preview:';
+                display: block;
+                font-size: 13px;
+                font-weight: bold;
+                padding-bottom: 3px; }
+            body > div.rir-conversation-response div.rir-conversation-preview:empty:after {
+                content: 'No message to preview';
+                color: #999; }
+            body > div.rir-conversation-response #RirShowReplyPreview:checked ~ .rir-conversation-preview {
+                display: block; }
+            blockquote {
+                border-left: solid #CCC 2px;
+                padding-left: 5px;
+                margin-left: 5px;                
+            }
+            .md {
+                line-height: 1.35em;
+            }
+            h2 {
+                margin: 0;
+            }
+            a {
+                color: #369;
+                text-decoration: none;
+            }
+            a:hover {
+                color: #69C;
+            }
+        </style>
+    </head>
+    <body>
+        !BODY!
+    </body>
+</html>

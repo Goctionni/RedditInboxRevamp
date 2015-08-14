@@ -11,9 +11,11 @@ log(INFO, "Reddit inbox Revamp loading");
         load_more_messages: chrome.extension.getURL('template/load_more_messages.html'),
         load_more_contacts: chrome.extension.getURL('template/load_more_contacts.html'),
         config: chrome.extension.getURL('template/config.html'),
-        export_window: chrome.extension.getURL('template/export_window.html'),
-        export_to_mysql: chrome.extension.getURL('template/export_to_mysql.html'),
-        export_to_html: chrome.extension.getURL('template/export_to_html.html')
+        export_all_window: chrome.extension.getURL('template/export_all_window.html'),
+        export_all_to_mysql: chrome.extension.getURL('template/export_all_to_mysql.html'),
+        export_all_to_html: chrome.extension.getURL('template/export_all_to_html.html'),
+        export_conversation_window: chrome.extension.getURL('template/export_conversation_window.html'),
+        export_conversation_to_html: chrome.extension.getURL('template/export_conversation_to_html.html')
     };
 
     rir.init.funcs.push(rir.functions.DOMReady);
@@ -30,8 +32,9 @@ log(INFO, "Reddit inbox Revamp loading");
             // Remove previous contents of main panel
             rir.$e.mainPanel.empty();
 
-            var $conversation = $(rir.templates.conversation);
+            var $conversation = $(rir.templates.conversation).appendTo(rir.$e.mainPanel);
             $conversation.data('conversation', conversation);
+            
             var $input = $conversation.find('textarea');
             var $submit = $conversation.find('.rir-conversation-reply-btn');
             var $preview = $conversation.find('.rir-conversation-preview');
@@ -39,6 +42,7 @@ log(INFO, "Reddit inbox Revamp loading");
             $conversation.find('.rir-expand-all-btn').on('click', function(){
                 $messageArea.find('.rir-private-message').removeClass('rir-collapsed');
             });
+            $conversation.find('#RirExportConversation').on('click', rir.view.showExportConversationOptions);
             $conversation.find('.rir-conversation-title').text(conversation.subject);
 
             var numMessages = conversation.messages.length;
@@ -92,8 +96,6 @@ log(INFO, "Reddit inbox Revamp loading");
                     }
                 });
             }
-
-            rir.$e.mainPanel.append($conversation);
 
             // Hide overlay
             rir.view.hideOverlay();
@@ -149,6 +151,7 @@ log(INFO, "Reddit inbox Revamp loading");
         },
         update: function(){
             // Init search from URL
+            rir.view.hideOverlay();
             rir.controller.parseUrl();
             rir.view.updateBodyClass();
 
@@ -277,13 +280,13 @@ log(INFO, "Reddit inbox Revamp loading");
             $('#RirMarkUnread').on('click', rir.controller.action.markUnread);
             $('#RirShowConfig').on('click', rir.view.showConfig);
         },
-        showExportOptions: function(e){
-            var html = rir.templates.export_window;
+        showExportAllOptions: function(e){
+            var html = rir.templates.export_all_window;
             html = replaceAll(html, '{DATE}', sysDateStr());
             html = replaceAll(html, '{TIME}', sysTimeStr());
             
             var $export = $(html);
-            $export.find('a').on('click', rir.controller.export);
+            $export.find('a').on('click', rir.controller.exportAll);
             $export.on('click', function(e){
                 e.stopPropagation();
             });
@@ -298,6 +301,23 @@ log(INFO, "Reddit inbox Revamp loading");
             rir_db.getAllPMConversations(function(conversations){
                 rir.model.cache.conversations = conversations;
             });
+        },
+        showExportConversationOptions: function(e){
+            var html = rir.templates.export_conversation_window;
+            html = replaceAll(html, '{DATE}', sysDateStr());
+            html = replaceAll(html, '{TIME}', sysTimeStr());
+            
+            var $export = $(html);
+            $export.find('a').on('click', rir.controller.exportConversation);
+            $export.on('click', function(e){
+                e.stopPropagation();
+            });
+            
+            rir.$e.overlay.empty().removeClass('rir-light-overlay').append($export);
+            rir.view.showOverlay(null, true);
+            
+            // This should not be needed, but apparently it is
+            e.stopPropagation();
         },
         showConfig: function(){
             var $config = $(rir.templates.config);
@@ -314,7 +334,7 @@ log(INFO, "Reddit inbox Revamp loading");
                 rir.$e.overlay.empty().removeClass('rir-light-overlay').off();
                 rir.controller.resetInbox();
             });
-            $config.find('#RirExportMessages').on('click', rir.view.showExportOptions);
+            $config.find('#RirExportMessages').on('click', rir.view.showExportAllOptions);
             $config.on('click', function(e){
                 e.stopPropagation();
             });
@@ -500,7 +520,7 @@ log(INFO, "Reddit inbox Revamp loading");
                 delete rir._get['searchObj'];
             }
         },
-        export: function(e){
+        exportAll: function(e){
             var $ele = $(this);
             var format = $ele.data('format');
             
@@ -530,7 +550,7 @@ log(INFO, "Reddit inbox Revamp loading");
                 alert('Not yet implemented');
             },
             MySQL: function(conversations){
-                var sql = rir.templates.export_to_mysql;
+                var sql = rir.templates.export_all_to_mysql;
                 var contexts = rir.model.getConversationContexts(conversations);
                 var messages = rir.model.removeConversationContexts(conversations);
                 
@@ -600,7 +620,69 @@ log(INFO, "Reddit inbox Revamp loading");
                 }
                 
                 return array2DtoCSV(csvRows);
+            },
+            TXT: function(conversations){
+                var txt = '';
+                for(var i = 0; i < conversations.length; i++) {
+                    if(i > 0) {
+                        txt += "\r\n---\r\n---\r\n";
+                    }
+                    var conversation = conversations[i];
+                    txt += '# ' + conversation.subject + "\r\n\r\n";
+                    for(var j = 0; j < conversation.messages.length; j++) {
+                        if(j > 0) {
+                            txt += "\r\n---\r\n";
+                        }
+                        
+                        var message = conversation.messages[j];
+                        txt += 'From: ' + message.author + ' | Date / time: ' + sysDateStr(message.created_utc * 1000) + ' ' + sysTimeStr(message.created_utc * 1000, ':') + ' UTC' + "\r\n\r\n";
+                        txt += message.body.replace("\r", "").replace("\n", "\r\n") + "\r\n";
+                    }
+                }
+                return txt;
+            },
+            'SINGLE-HTML': function(conversations){
+                var $eleClone = $('.rir-conversation').clone();
+                $eleClone.find('.rir-conversation-response').remove();
+                $eleClone.find('.rir-private-message').removeClass('rir-collapsed');
+                $eleClone.find('button').remove();
+                var html =  $eleClone.html();
+                
+                if($('#RedactUsernames').prop('checked')) {
+                    var names = rir.model.names.extractUsernames(conversations);
+                    var substitutions = rir.model.names.getNameSubstitutes(names);
+                    
+                    for(var i = 0; i < names.length; i++) {
+                        var name = names[i];
+                        var substitution = substitutions[name];
+                        html = replaceAll(html, name, substitution);
+                    }
+                }
+                
+                
+                var html = rir.templates.export_conversation_to_html.replace('!BODY!', html);
+                return html;
             }
+        },
+        exportConversation: function(e){
+            var $ele = $(this);
+            var format = $ele.data('format');
+            
+            var conversations = [$('.rir-conversation').data('conversation')];
+            
+            // Filter deleted and modmail, if that's configged
+            if(!rir_cfg.showModmail) rir.model.modmailFilter(conversations);
+            rir.model.directoryFilter(conversations, 'inbox');
+            
+            if($('#RedactUsernames').prop('checked') && format !== 'SINGLE-HTML') {
+                conversations = rir.model.names.substituteUsernames(conversations);
+            }
+            
+            var data = rir.controller.exportFormats[format](conversations, e);
+            
+            var dataBlob = new Blob([data], {type : 'text/plain'});
+            var downloadUrl = URL.createObjectURL(dataBlob);
+            this.href = downloadUrl;
         },
         action: {
             get conversations(){

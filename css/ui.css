@@ -284,23 +284,34 @@ body > div.content {
           font-weight: normal;
           padding-bottom: 10px;
           color: #222; }
-        body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > button.rir-expand-all-btn {
+        body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > .rir-conversation-controls {
           position: absolute;
           top: 5px;
-          right: 5px;
-          background-color: transparent;
-          background-image: url("chrome-extension://__MSG_@@extension_id__/images/icons.png");
-          background-position-x: -96px;
-          background-position-y: 0px;
-          background-repeat: no-repeat;
-          width: 16px;
-          height: 16px;
-          border-style: none; }
-          body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > button.rir-expand-all-btn:hover {
-            background-position-y: -16px;
+          right: 5px; }
+          body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > .rir-conversation-controls #RirExportConversation {
+            position: relative;
+            top: -2px;
+            right: 5px;
+            border-style: none;
+            background-color: transparent;
+            color: #888;
             outline-style: none; }
-          body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > button.rir-expand-all-btn:active, body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > button.rir-expand-all-btn:focus {
-            outline-style: none; }
+            body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > .rir-conversation-controls #RirExportConversation:hover {
+              color: #444; }
+          body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > .rir-conversation-controls button.rir-expand-all-btn {
+            background-color: transparent;
+            background-image: url("chrome-extension://__MSG_@@extension_id__/images/icons.png");
+            background-position-x: -96px;
+            background-position-y: 0px;
+            background-repeat: no-repeat;
+            width: 16px;
+            height: 16px;
+            border-style: none; }
+            body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > .rir-conversation-controls button.rir-expand-all-btn:hover {
+              background-position-y: -16px;
+              outline-style: none; }
+            body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > .rir-conversation-controls button.rir-expand-all-btn:active, body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > .rir-conversation-controls button.rir-expand-all-btn:focus {
+              outline-style: none; }
         body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-private-messages {
           border-top: solid #CCC 1px; }
           body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-private-messages .rir-private-message {
