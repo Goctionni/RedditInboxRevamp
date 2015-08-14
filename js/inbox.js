@@ -57,7 +57,7 @@ log(INFO, "Reddit inbox Revamp loading");
                     if(!pm['new'] && i < numMessages) {
                         $pm.addClass('rir-collapsed');
                     }
-                    if(pm.author === conversation.correspondent) {
+                    if(pm.author !== getUsername()) {
                         responseId = pm.name;
                     }
                 })(conversation.messages[numMessages - i]);

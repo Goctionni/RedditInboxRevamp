@@ -287,15 +287,23 @@ var rir_db = {};
         }
     }
     
-    function addPrivateMessages(obj, callback) {
+    function stripNonPMAttributes(obj){
         var message = getObjAttributes(obj, db_tables.privateMessages.columns);
+        if(!message.author && obj.subreddit) {
+            message.author = '#' + obj.subreddit;
+        }
+        return message;
+    }
+    
+    function addPrivateMessages(obj, callback) {
+        var message = stripNonPMAttributes(obj);
         message.first_message_name = (message.first_message_name) ? message.first_message_name : message.name;
         
         var messages = [message];
         if(obj.replies) {
             var replies = obj.replies.data.children;
             for(var i = 0; i < replies.length; i++) {
-                messages.push(getObjAttributes(replies[i].data, db_tables.privateMessages.columns));
+                messages.push(stripNonPMAttributes(replies[i].data));
             }
         }
         
@@ -338,7 +346,11 @@ var rir_db = {};
             var item = listing[i];
             if(indexed.indexOf(item.data.id) === -1) {
                 indexed.push(item.data.id);
-                listItems.push(item.data);
+                var obj = item.data;
+                if(!obj.author && obj.subreddit) {
+                    obj.author = obj.subreddit;
+                }
+                listItems.push(obj);
             }
         }
         return listItems;
