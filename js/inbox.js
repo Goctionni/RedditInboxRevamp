@@ -728,7 +728,7 @@ log(INFO, "Reddit inbox Revamp loading");
                     var id = conversation.id;
                     var index = rir_cfg.deleted.indexOf(id);
                     if(index >= 0) {
-                        rir_cfg.deleted.splice(id, 1);
+                        rir_cfg.deleted.splice(index, 1);
                         if(rir.show === "deleted") {
                             conversation.$e.slideUp(function(){
                                 conversation.$e.remove();
@@ -763,7 +763,7 @@ log(INFO, "Reddit inbox Revamp loading");
                     var id = conversation.id;
                     var index = rir_cfg.saved.indexOf(id);
                     if(index >= 0) {
-                        rir_cfg.saved.splice(id, 1);
+                        rir_cfg.saved.splice(index, 1);
                         if(rir.show === "saved") {
                             conversation.$e.slideUp(function(){
                                 conversation.$e.remove();
