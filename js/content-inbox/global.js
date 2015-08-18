@@ -3,7 +3,29 @@ var rir = {
         funcs: [],
         waitingCallbacks: [],
         completed: []
-    }
+    },
+    cfg: {
+        data: {}
+    },
+    proxy: function(path, params, callback){
+        if(typeof callback === "undefined") callback = function(){};
+        if(typeof params === "undefined") params = [];
+        else if(!(params instanceof Array)) params = [params];
+        
+        // Add username to cmdObj
+        
+        var cmdObj = {
+            action: "proxyCmd",
+            username: getUsername(),
+            path: path,
+            params: params
+        };
+        
+        chrome.runtime.sendMessage(cmdObj, function(response){
+            callback.apply(this, response);
+        });
+    },
+    helper: {}
 };
 
 (function($, undefined){
@@ -40,9 +62,6 @@ var rir = {
     // An init function calls this function when it is done
     // The 'key' parameter is the name of the function
     rir.init.done = function(key){
-        var delay = getTime() - startTime;
-        log(DEBUG, "Initializing", key, "took", delay, "ms");
-        
         rir.init.completed.push(key);
         checkCallbacksReady();
     };
@@ -82,6 +101,30 @@ var rir = {
             })(tArray[i]);
         }
         return false;
+    };
+    
+    rir.functions.initConfig = function(callback){
+        rir.proxy(['rir', 'cfg_get'], [], function(cfg){
+            if(!cfg.doImport) {
+                rir.cfg.data = cfg;
+            }
+            else {
+                // An import needs to be attempted
+                if(typeof localStorage['RIR_CONFIG'] !== "undefined") {
+                    // There is something to import
+                    rir.cfg.data = JSON.parse(localStorage['RIR_CONFIG']);
+                    console.log("Importing old data");
+                }
+                else {
+                    // There is nothing to import
+                    rir.cfg.data = cfg;
+                }
+                rir.cfg.data.doImport = false;
+                rir.proxy(['rir', 'cfg_import'], rir.cfg.data);
+            }
+            rir.init.done("CFGReady");
+            callback();
+        });
     };
     
 })(jQuery);

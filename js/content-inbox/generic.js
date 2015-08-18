@@ -5,21 +5,6 @@ function isLoggedIn(){
     return (getUsername() !== "sign in or create an account");
 }
 
-function log(level) {
-    if(!(logLevel & level)) return;
-
-    var args = [];
-    for(var i = 1; i < arguments.length; i++) {
-        args.push(arguments[i]);
-    }
-    if(level === ERROR) {
-        console.error.apply(console, args);
-    }
-    else {
-        console.log.apply(console, args);
-    }
-}
-
 function htmlDecode(str){
     var ele = document.createElement('span');
     ele.innerHTML = str;

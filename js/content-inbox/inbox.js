@@ -1,5 +1,3 @@
-log(INFO, "Reddit inbox Revamp loading");
-
 (function($){
     
     rir.templates = {
@@ -91,7 +89,7 @@ log(INFO, "Reddit inbox Revamp loading");
                             text: text,
                             renderstyle: 'html'
                         }).success(function(){
-                            rir_db.indexNewPrivateMessages(rir.view.update);
+                            rir.model.updateDb(rir.view.update, rir.view.showNotification);
                         });
                     }
                 });
@@ -117,7 +115,7 @@ log(INFO, "Reddit inbox Revamp loading");
             var filteredConversations = conversations.slice();
             rir.model.searchFilter(filteredConversations);
             rir.model.directoryFilter(filteredConversations);
-            if(!rir_cfg.showModmail) rir.model.modmailFilter(filteredConversations);
+            if(!rir.cfg.data.showModmail) rir.model.modmailFilter(filteredConversations);
             
             // Show conversations
             rir.view.addConversationsToInbox(filteredConversations);
@@ -157,13 +155,13 @@ log(INFO, "Reddit inbox Revamp loading");
 
             if(rir.show === "conversation") {
                 // Show this conversation
-                rir_db.getConversation(rir.showid, rir.view.showConversation);
+                rir.model.getConversation(rir.showid, rir.view.showConversation)
                 // Update contact list
-                rir_db.getAllPMConversations(rir.view.updateContactList);
+                rir.model.getConversations(rir.view.updateContactList);
             }
             if(['inbox', 'saved', 'deleted'].indexOf(rir.show) >= 0) {
                 // Fetch all conversations and add them to the inbox view
-                rir_db.getAllPMConversations(rir.view.showInbox);
+                rir.model.getConversations(rir.view.showInbox);
             }
         },
         addMessageInInbox: function(conversation) {
@@ -201,8 +199,8 @@ log(INFO, "Reddit inbox Revamp loading");
         },
         initLayout: function(){
             //  Set page title
-            document.title = rir_cfg.pageTitle;
-            $('<title>').text(rir_cfg.pageTitle);
+            document.title = rir.cfg.data.pageTitle;
+            $('<title>').text(rir.cfg.data.pageTitle);
             
             // Establish container for saved DOM elements
             rir.$e = {
@@ -252,7 +250,7 @@ log(INFO, "Reddit inbox Revamp loading");
                     rir.controller.reloadInbox();
                 }
                 else {
-                    history.pushState({}, rir_cfg.pageTitle, url);
+                    history.pushState({}, rir.cfg.data.pageTitle, url);
                     rir.view.update();
                 }
             });
@@ -298,7 +296,7 @@ log(INFO, "Reddit inbox Revamp loading");
             e.stopPropagation();
             
             // Make sure we have all conversations in cache
-            rir_db.getAllPMConversations(function(conversations){
+            rir.model.getConversations(function(conversations){
                 rir.model.cache.conversations = conversations;
             });
         },
@@ -323,10 +321,10 @@ log(INFO, "Reddit inbox Revamp loading");
             var $config = $(rir.templates.config);
             
             var $showModMail = $config.find('#RirShowModMail');
-            $showModMail.prop('checked', rir_cfg.showModmail);
+            $showModMail.prop('checked', rir.cfg.data.showModmail);
             $showModMail.on('change', function(){
                 var checked = $showModMail.prop('checked');
-                rir_cfg_set('showModmail', checked);
+                rir.cfg.set('showModmail', checked);
                 rir.view.showInbox(rir.model.cache.conversations, false);
             });
             
@@ -382,6 +380,7 @@ log(INFO, "Reddit inbox Revamp loading");
             $('<div class="notification-message">').text(message).appendTo(rir.$e.overlay.empty());
             rir.$e.overlay.show().addClass('show');
             
+            if(duration < 0) return;
             setTimeout(function(){
                 rir.view.hideOverlay();
             }, duration);
@@ -406,7 +405,7 @@ log(INFO, "Reddit inbox Revamp loading");
                 rir.view.addMessageInInbox(conversation);
                 
                 // If the maximum number of conversations has been added
-                if(++conversationsAdded > rir_cfg.maxInitialMessagesShown){
+                if(++conversationsAdded > rir.cfg.data.maxInitialMessagesShown){
                     // Add load more content element
                     rir.view.addLoadMoreElement(
                         rir.templates['load_more_messages'],
@@ -423,7 +422,7 @@ log(INFO, "Reddit inbox Revamp loading");
                 var contact = contacts[i];
                 rir.view.addContactToList(contact);
                 
-                if((i + 1) === rir_cfg.maxContacts) {
+                if((i + 1) === rir.cfg.data.maxContacts) {
                     rir.view.addLoadMoreElement(
                         rir.templates['load_more_contacts'],
                         rir.$e.contacts,
@@ -460,21 +459,14 @@ log(INFO, "Reddit inbox Revamp loading");
     rir.controller = {
         resetInbox: function(){
             rir.view.showLoading('Clearing inbox');
-            rir_db.clearInbox(function(){
-                var username = getUsername();
-                while(true){
-                    var index = rir_cfg.pmInboxInitialized.indexOf(username);
-                    if(index < 0) break;
-                    
-                    rir_cfg.pmInboxInitialized.splice(index, 1);
-                    rir_cfg_save();
-                }
+            rir.proxy(['rir', 'db', 'clearObjectStore'], [db_tables.privateMessages.name], function(){
+                rir.cfg.set('pmInboxInitialized', false);
                 rir.controller.reloadInbox();
             });
         },
         showMessageClick: function() {
             var conversation = $(this).data('conversation');
-            history.pushState({}, rir_cfg.pageTitle, '/message/rir_conversation/' + conversation.id);
+            history.pushState({}, rir.cfg.data.pageTitle, '/message/rir_conversation/' + conversation.id);
             rir.controller.parseUrl();            
             rir.view.showConversation(conversation);
             
@@ -483,16 +475,16 @@ log(INFO, "Reddit inbox Revamp loading");
         },
         reloadInbox: function(){
             rir.view.showLoading();
-            rir_db.setStatusFunction(rir.view.showStatus);
-            
-            rir_db.init(function(){
-                rir_db.setStatusFunction(null);
+            rir.model.updateDb(function(){
                 rir.view.update();
                 rir.view.setFavicon();
+            }, function(errorMessage){
+                rir.view.showNotification(message, -1);
+                console.error("DB has NOT been updated", arguments);
             });
         },
         search: function(query){
-            history.pushState({}, rir_cfg.pageTitle, '/message/rir_inbox?search=' + query);
+            history.pushState({}, rir.cfg.data.pageTitle, '/message/rir_inbox?search=' + query);
             rir.view.update();
         },
         parseUrl: function(){
@@ -527,7 +519,7 @@ log(INFO, "Reddit inbox Revamp loading");
             var conversations = rir.model.cache.conversations.slice();
             
             // Filter deleted and modmail, if that's configged
-            if(!rir_cfg.showModmail) rir.model.modmailFilter(conversations);
+            if(!rir.cfg.data.showModmail) rir.model.modmailFilter(conversations);
             rir.model.directoryFilter(conversations, 'inbox');
             
             if($('#RedactUsernames').prop('checked')) {
@@ -671,7 +663,7 @@ log(INFO, "Reddit inbox Revamp loading");
             var conversations = [$('.rir-conversation').data('conversation')];
             
             // Filter deleted and modmail, if that's configged
-            if(!rir_cfg.showModmail) rir.model.modmailFilter(conversations);
+            if(!rir.cfg.data.showModmail) rir.model.modmailFilter(conversations);
             rir.model.directoryFilter(conversations, 'inbox');
             
             if($('#RedactUsernames').prop('checked') && format !== 'SINGLE-HTML') {
@@ -706,16 +698,18 @@ log(INFO, "Reddit inbox Revamp loading");
                 for(var i = 0; i < conversations.length; i++) {
                     var conversation = conversations[i];
                     var id = conversation.id;
-                    if(rir_cfg.deleted.indexOf(id) < 0) {
-                        rir_cfg.deleted.push(id);
-                        if(rir.show !== "deleted") {
+                    if(!rir.cfg.deleted.contains(id)) {
+                        rir.cfg.deleted.add(id);
+                        if(rir.show === "conversation") {
+                            history.back();
+                        }
+                        else if(rir.show !== "deleted") {
                             conversation.$e.slideUp(function(){
                                 conversation.$e.remove();
                             });
                         }
                     }
                 }
-                rir_cfg_save();
                 
                 if(!conversations.length) return;
                 var msg = (conversations.length === 1) ? 'The message was deleted' : 'The messages were deleted';
@@ -726,9 +720,8 @@ log(INFO, "Reddit inbox Revamp loading");
                 for(var i = 0; i < conversations.length; i++) {
                     var conversation = conversations[i];
                     var id = conversation.id;
-                    var index = rir_cfg.deleted.indexOf(id);
-                    if(index >= 0) {
-                        rir_cfg.deleted.splice(index, 1);
+                    if(rir.cfg.deleted.contains(id)) {
+                        rir.cfg.deleted.remove(id);
                         if(rir.show === "deleted") {
                             conversation.$e.slideUp(function(){
                                 conversation.$e.remove();
@@ -736,7 +729,6 @@ log(INFO, "Reddit inbox Revamp loading");
                         }
                     }
                 }
-                rir_cfg_save();
                 
                 if(!conversations.length) return;
                 var msg = (conversations.length === 1) ? 'The message was restored' : 'The messages were restored';
@@ -746,11 +738,10 @@ log(INFO, "Reddit inbox Revamp loading");
                 var conversations = rir.controller.action.conversations;
                 for(var i = 0; i < conversations.length; i++) {
                     var id = conversations[i].id;
-                    if(rir_cfg.saved.indexOf(id) < 0) {
-                        rir_cfg.saved.push(id);
+                    if(!rir.cfg.saved.contains(id)) {
+                        rir.cfg.saved.add(id);
                     }
                 }
-                rir_cfg_save();
                 
                 if(!conversations.length) return;
                 var msg = (conversations.length === 1) ? 'The message was saved' : 'The messages were saved';
@@ -761,9 +752,8 @@ log(INFO, "Reddit inbox Revamp loading");
                 for(var i = 0; i < conversations.length; i++) {
                     var conversation = conversations[i];
                     var id = conversation.id;
-                    var index = rir_cfg.saved.indexOf(id);
-                    if(index >= 0) {
-                        rir_cfg.saved.splice(index, 1);
+                    if(rir.cfg.saved.contains(id)) {
+                        rir.cfg.saved.remove(id);
                         if(rir.show === "saved") {
                             conversation.$e.slideUp(function(){
                                 conversation.$e.remove();
@@ -771,7 +761,6 @@ log(INFO, "Reddit inbox Revamp loading");
                         }
                     }
                 }
-                rir_cfg_save();
                 
                 if(!conversations.length) return;
                 var msg = (conversations.length === 1) ? 'The message was unsaved' : 'The messages were unsaved';
@@ -815,8 +804,8 @@ log(INFO, "Reddit inbox Revamp loading");
                     updated.push(conversation.messages[i]);
                 }
             }
-            rir_db.updateMessages(updated, function(){
-                log(DEBUG, "Conversation status updated");
+            rir.proxy(['rir', 'db', 'updateAll'], [db_tables.privateMessages.name, updated], function(){
+                
             });
         },
         getSortedContactsFromConversations: function(conversations){
@@ -857,8 +846,8 @@ log(INFO, "Reddit inbox Revamp loading");
             for(var i = 0; i < conversations.length; i++) {
                 var conversation = conversations[i];
 
-                var saved = (rir_cfg.saved.indexOf(conversation.id) >= 0);
-                var deleted = (rir_cfg.deleted.indexOf(conversation.id) >= 0);
+                var saved = rir.cfg.saved.contains(conversation.id);
+                var deleted = rir.cfg.deleted.contains(conversation.id);
 
                 if(directory === "saved" && !saved
                 || directory === "deleted" && !deleted
@@ -1022,11 +1011,15 @@ log(INFO, "Reddit inbox Revamp loading");
         
         // Initialize default layout elements
         rir.view.setFavicon();
-        rir.view.initLayout();
-        rir.view.bindActionButtons();
-        rir.view.showLoading();
         
-        rir_db.openDb(getUsername(), rir.controller.reloadInbox);
+        rir.functions.initConfig(function(){
+            rir.view.initLayout();
+            rir.view.bindActionButtons();
+            rir.view.showLoading();
+            
+            rir.proxy(['rir', 'db', 'init'], [], rir.controller.reloadInbox);
+        });
+        
     });
     
 })(jQuery);

@@ -1,6 +1,6 @@
 {
     "name": "Reddit Inbox Revamp",
-    "version": "0.9.9.1",
+    "version": "0.9.9.2",
     "description": "Revamps the reddit inbox",
     "permissions": [
         "http://*.reddit.com/*", "https://*.reddit.com/*"
@@ -16,17 +16,20 @@
         {
             "matches": ["http://*.reddit.com/*", "https://*.reddit.com/*"],
             "css": ["css/notification_icons.css"],
-            "js": ["js/notification_icons.js"],
+            "js": ["js/content-all/notification_icons.js", "js/content-all/messageListener.js"],
             "run_at": "document_start",
             "all_frames": true
         },
         {
             "matches": ["http://*.reddit.com/message/rir_*", "https://*.reddit.com/message/rir_*"],
             "css": ["css/ui.css"],
-            "js": ["js/jquery.min.js", "js/snuownd.js", "js/constants.js", "js/config.js", "js/generic.js", "js/idb.js", "js/global.js", "js/inbox.js"],
+            "js": ["js/content-inbox/jquery.min.js", "js/content-inbox/snuownd.js", "js/global/constants.js", "js/content-inbox/global.js", "js/content-inbox/config.js", "js/content-inbox/generic.js", "js/content-inbox/inbox.js", "js/content-inbox/dbhelper.js", "js/legacy/idb.js"],
             "run_at": "document_start",
             "all_frames": true
-        }]
-    ,
+        }
+    ],
+    "background": {
+        "page": "js/background/bg.html"
+    },
     "manifest_version": 2
 }
