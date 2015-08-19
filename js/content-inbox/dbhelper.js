@@ -59,6 +59,9 @@
         importOldDb: function(callback, error){
             rir.legacy.db.openDb(getUsername(), function(){
                 rir.legacy.db.getAll(db_tables.privateMessages.name, 'created_utc', false, function(messages){
+                    for(var i = 0; i < messages.length; i++) {
+                        messages[i] = rir.helper.fixPrivateMessage(messages[i]);
+                    }
                     rir.proxy(['rir', 'db', 'addAll'], [db_tables.privateMessages.name, messages], function(numAdded){
                         rir.cfg.set('pmInboxInitialized', true);
                         rir.model.updateDb(callback, error);

@@ -92,7 +92,7 @@ body > div.content {
     body > div.content .rir-content .rir-top-panel .rir-search-panel {
       position: absolute;
       left: 210px;
-      right: 550px;
+      right: 415px;
       overflow: visible; }
       body > div.content .rir-content .rir-top-panel .rir-search-panel input {
         box-sizing: border-box;
@@ -240,32 +240,66 @@ body > div.content {
           font-size: 13px; }
         body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row .rir-checkbox {
           float: left;
-          width: 50px;
+          width: 30px;
+          text-align: center;
+          cursor: default;
+          user-select: none;
+          -webkit-user-select: none;
+          margin-left: 6px; }
+        body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row .rir-last-author {
+          float: left;
+          width: 30px;
           text-align: center;
           cursor: default;
           user-select: none;
           -webkit-user-select: none; }
-        body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row .rir-correspondent {
-          float: left;
-          width: 200px;
-          color: #000; }
-          body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row .rir-correspondent:before {
-            content: ' ';
+          body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row .rir-last-author:before {
+            content: '';
+            position: relative;
+            top: 3px;
             display: inline-block;
-            width: 19px;
-            height: 12px;
+            width: 17px;
+            height: 17px;
             background-image: url("chrome-extension://__MSG_@@extension_id__/images/icons.png");
             background-repeat: no-repeat;
-            background-position-x: -152px;
-            margin-right: 5px;
-            -webkit-filter: grayscale(0.7); }
+            background-position-x: -155px;
+            background-position-y: -1px; }
+          body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row .rir-last-author.rir-last-sent:before {
+            background-position-y: -20px; }
+        body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row .rir-save-toggle {
+          float: left;
+          width: 30px;
+          text-align: center;
+          cursor: default;
+          user-select: none;
+          -webkit-user-select: none;
+          margin-right: 5px; }
+          body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row .rir-save-toggle:before {
+            content: '';
+            position: relative;
+            top: 3px;
+            display: inline-block;
+            width: 17px;
+            height: 17px;
+            background-image: url("chrome-extension://__MSG_@@extension_id__/images/icons.png");
+            background-repeat: no-repeat;
+            background-position-x: -134px;
+            background-position-y: -1px;
+            cursor: pointer;
+            transition: background-position-y ease-in-out 0.5s; }
+          body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row .rir-save-toggle.rir-saved:before {
+            background-position-y: -20px; }
+        body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row .rir-correspondent {
+          float: left;
+          width: 180px;
+          color: #000; }
         body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row.rir-last-sent .rir-correspondent:before {
           background-position-y: -2px; }
         body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row.rir-last-received .rir-correspondent:before {
           background-position-y: -18px; }
         body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row .rir-subject-text {
           position: absolute;
-          left: 250px;
+          left: 280px;
           right: 110px; }
           body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row .rir-subject-text .rir-subject {
             display: inline;
@@ -614,7 +648,7 @@ body.res-nightmode .rir-top-panel {
     body.res-nightmode .rir-top-panel .rir-buttons-panel button:hover {
       border-bottom-color: #369 !important; }
   body.res-nightmode .rir-top-panel .rir-buttons-panel .rir-config-button .rir-icon-cog {
-    background-position-x: -131px !important;
+    background-position-y: -20px !important;
     opacity: 0.85; }
 body.res-nightmode .rir-left-panel > a {
   color: #CCC !important; }

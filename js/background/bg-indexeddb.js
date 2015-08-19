@@ -53,7 +53,7 @@
     };
     
     DBInstance.prototype.clearObjectStore = function(store_name){
-        var store = this.getObjectStore(store_name, mode.readwrite);
+        var store = this.getObjectStore(store_name, db_mode.readwrite);
         return new Promise(function(callback){
             var req = store.clear();
             req.onsuccess = function(){

@@ -119,7 +119,7 @@ body > div.content {
             .rir-search-panel {
                 position: absolute;
                 left: 210px;
-                right: 550px;
+                right: 415px;
                 overflow: visible;
     
                 input {
@@ -322,28 +322,69 @@ body > div.content {
                     
                     .rir-checkbox {
                         float: left;
-                        width: 50px;
+                        width: 30px;
                         text-align: center;
                         cursor: default;
                         user-select: none;
                         -webkit-user-select: none;
+                        margin-left: 6px;
+                    }
+                    .rir-last-author {
+                        float: left;
+                        width: 30px;
+                        text-align: center;
+                        cursor: default;
+                        user-select: none;
+                        -webkit-user-select: none;
+                        
+                        &:before {
+                            content: '';
+                            position: relative;
+                            top: 3px;
+                            display: inline-block;
+                            width: 17px;
+                            height: 17px;
+                            background-image: url('chrome-extension://__MSG_@@extension_id__/images/icons.png');
+                            background-repeat: no-repeat;
+                            background-position-x: -155px;
+                            background-position-y: -1px;
+                        }
+                        
+                        &.rir-last-sent:before {
+                            background-position-y: -20px;
+                        }
+                    }
+                    .rir-save-toggle {
+                        float: left;
+                        width: 30px;
+                        text-align: center;
+                        cursor: default;
+                        user-select: none;
+                        -webkit-user-select: none;
+                        margin-right: 5px;
+                        
+                        &:before {
+                            content: '';
+                            position: relative;
+                            top: 3px;
+                            display: inline-block;
+                            width: 17px;
+                            height: 17px;
+                            background-image: url('chrome-extension://__MSG_@@extension_id__/images/icons.png');
+                            background-repeat: no-repeat;
+                            background-position-x: -134px;
+                            background-position-y: -1px;
+                            cursor: pointer;
+                            transition: background-position-y ease-in-out 0.5s;
+                        }
+                        &.rir-saved:before {
+                            background-position-y: -20px;
+                        }
                     }
                     .rir-correspondent {
                         float: left;
-                        width: 200px;
+                        width: 180px;
                         color: #000;
-                        
-                        &:before {
-                            content: ' ';
-                            display: inline-block;
-                            width: 19px;
-                            height: 12px;
-                            background-image: url('chrome-extension://__MSG_@@extension_id__/images/icons.png');
-                            background-repeat: no-repeat;
-                            background-position-x: -152px;
-                            margin-right: 5px;
-                            -webkit-filter: grayscale(0.7);
-                        }
                     }
                     
                     &.rir-last-sent .rir-correspondent:before {
@@ -355,7 +396,7 @@ body > div.content {
                     
                     .rir-subject-text {
                         position: absolute;
-                        left: 250px;
+                        left: 280px;
                         right: 110px;
                         
                         .rir-subject {
@@ -848,7 +889,7 @@ body.res-nightmode {
                 }
             }
             .rir-config-button .rir-icon-cog {
-                background-position-x: -131px!important;
+                background-position-y: -20px!important;
                 opacity: 0.85;
             }
         }

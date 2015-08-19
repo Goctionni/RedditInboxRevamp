@@ -1,8 +1,8 @@
-#mail, #mailCount, #mail + .message-count {
+#mail, #mailCount, #mail + .message-count, #tb-mail, #tb-mailCount, #NREMail {
     display: none!important;
 }
 
-#rir-mail, #rir-privatemessages {
+.rir-mail, .rir-privatemessages {
     background-repeat: no-repeat;
     width: 16px;
     height: 10px;
@@ -12,17 +12,9 @@
     text-indent: -9999px;
     line-height: 8px;
     text-decoration: none;
-    
-    & + .message-count {
-        display: inline-block;
-        
-        &:empty {
-            display: none;
-        }
-    }
 }
 
-#rir-mail {
+.rir-mail {
     background-image: url('https://www.redditstatic.com/sprite-reddit.reNnXuo8_bA.png');
     background-position: -99px -863px;
     top: 2px;
@@ -31,12 +23,59 @@
         background-position-x: -78px;
     }
 }
-#rir-privatemessages {
+.rir-privatemessages {
     background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAUAgMAAAD5DFXkAAAAA3NCSVQICAjb4U/gAAAADFBMVEX///////+ZmZn/VwBo6xFqAAAABHRSTlMA////sy1AiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABZ0RVh0Q3JlYXRpb24gVGltZQAwOC8wNS8xNXOdnPsAAAAcdEVYdFNvZnR3YXJlAEFkb2JlIEZpcmV3b3JrcyBDUzbovLKMAAAAR0lEQVQImWPgWrWqgUE1NDSBYWpoaAQ6AZbgWhXVwMDAlMAAJIAM/v//DzCYhoYWMFwNDY1BJ8AS/P/jDzAwMBcAdTAfYAAA1EMdRbzUXMsAAAAASUVORK5CYII=');
     background-position: 0px 0px;
     top: 3px;
     
     &.rir-havemail {
         background-position-y: -10px;
+    }
+}
+
+#header {
+    .rir-mail + .message-count, .rir-privatemessages + .message-count {
+        display: inline-block;
+
+        &:empty {
+            display: none;
+        }
+    }
+}
+
+#NREFloat {
+    .rir-privatemessages {
+        float: left;
+        top: 4px;
+        margin-right: 4px;
+    }
+    .rir-mail {
+        float: left;
+        top: 4px;
+    }
+}
+
+#tb-toolbarcounters {
+    .rir-privatemessages {
+        top: 2px;
+    }
+    .rir-mail {
+        top: 1px;
+        margin-left: 5px;
+    }
+    
+    .message-count {
+        display: inline;
+        background-color: transparent;
+        color: #369;
+        font-family: verdana, arial, helvetica, sans-serif;
+        font-size: 11px;
+        
+        &:before { content: '['; }
+        &:after { content: ']'; }
+        
+        &:empty:before {
+            content: '[0';
+        }
     }
 }

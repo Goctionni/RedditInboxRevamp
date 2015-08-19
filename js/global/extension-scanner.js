@@ -39,6 +39,7 @@
         var mutationFilter = {attributes: true, attributeFilter: ['class']};
         var observer = new MutationObserver(bodyClasslistChanged);
         observer.observe(document.body, mutationFilter);
+        bodyClasslistChanged();
     });
     
 })();

@@ -196,11 +196,16 @@
             var $row = $(html).appendTo(rir.$e.mainPanel);
             
             if(conversation.last_author === getUsername()) {
-                $row.addClass('rir-last-sent');
+                $row.find('.rir-last-author').addClass('rir-last-sent');
             }
             else {
                 $row.addClass('rir-last-received');
             }
+            if(rir.cfg.saved.contains(conversation.id)) {
+                $row.find('.rir-save-toggle').addClass('rir-saved');
+            }
+            $row.find('.rir-save-toggle').on('click', rir.controller.action.toggleSave)
+            
             if(unread) $row.addClass('rir-unread');
             $row.data('conversation', conversation);
             $row.find('.rir-correspondent').text(correspondent);
@@ -728,6 +733,20 @@
                     return conversations;
                 }
             },
+            toggleSave: function(e){
+                var $ele = $(this);
+                var id = $ele.closest('.rir-message-row').data('conversation').id;
+                if($ele.hasClass('rir-saved')) {
+                    rir.cfg.saved.remove(id);
+                    $ele.removeClass('rir-saved');
+                }
+                else {
+                    rir.cfg.saved.add(id);
+                    $ele.addClass('rir-saved');
+                }
+
+                e.stopPropagation();
+            },
             delete: function(){
                 var conversations = rir.controller.action.conversations;
                 for(var i = 0; i < conversations.length; i++) {
@@ -1035,11 +1054,14 @@
     
     rir.init.start();
     rir.init.executeAfter(['DOMReady', 'preloadTemplatesReady'], function(){
+        // The DOM is ready and templates have been preloaded
+        
         // Don't do anything if it's a 503
         if(document.title.indexOf("Ow!") >= 0) return;
         if(!isLoggedIn()) return;
         
-        // The DOM is ready and templates have been preloaded
+        // Mark messages read
+        $.get('/message/inbox/');
         
         // Parse the URL
         rir.controller.parseUrl();

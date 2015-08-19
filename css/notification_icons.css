@@ -1,7 +1,7 @@
-#mail, #mailCount, #mail + .message-count {
+#mail, #mailCount, #mail + .message-count, #tb-mail, #tb-mailCount, #NREMail {
   display: none !important; }
 
-#rir-mail, #rir-privatemessages {
+.rir-mail, .rir-privatemessages {
   background-repeat: no-repeat;
   width: 16px;
   height: 10px;
@@ -11,23 +11,50 @@
   text-indent: -9999px;
   line-height: 8px;
   text-decoration: none; }
-  #rir-mail + .message-count, #rir-privatemessages + .message-count {
-    display: inline-block; }
-    #rir-mail + .message-count:empty, #rir-privatemessages + .message-count:empty {
-      display: none; }
 
-#rir-mail {
+.rir-mail {
   background-image: url("https://www.redditstatic.com/sprite-reddit.reNnXuo8_bA.png");
   background-position: -99px -863px;
   top: 2px; }
-  #rir-mail.rir-havemail {
+  .rir-mail.rir-havemail {
     background-position-x: -78px; }
 
-#rir-privatemessages {
+.rir-privatemessages {
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAUAgMAAAD5DFXkAAAAA3NCSVQICAjb4U/gAAAADFBMVEX///////+ZmZn/VwBo6xFqAAAABHRSTlMA////sy1AiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABZ0RVh0Q3JlYXRpb24gVGltZQAwOC8wNS8xNXOdnPsAAAAcdEVYdFNvZnR3YXJlAEFkb2JlIEZpcmV3b3JrcyBDUzbovLKMAAAAR0lEQVQImWPgWrWqgUE1NDSBYWpoaAQ6AZbgWhXVwMDAlMAAJIAM/v//DzCYhoYWMFwNDY1BJ8AS/P/jDzAwMBcAdTAfYAAA1EMdRbzUXMsAAAAASUVORK5CYII=");
   background-position: 0px 0px;
   top: 3px; }
-  #rir-privatemessages.rir-havemail {
+  .rir-privatemessages.rir-havemail {
     background-position-y: -10px; }
+
+#header .rir-mail + .message-count, #header .rir-privatemessages + .message-count {
+  display: inline-block; }
+  #header .rir-mail + .message-count:empty, #header .rir-privatemessages + .message-count:empty {
+    display: none; }
+
+#NREFloat .rir-privatemessages {
+  float: left;
+  top: 4px;
+  margin-right: 4px; }
+#NREFloat .rir-mail {
+  float: left;
+  top: 4px; }
+
+#tb-toolbarcounters .rir-privatemessages {
+  top: 2px; }
+#tb-toolbarcounters .rir-mail {
+  top: 1px;
+  margin-left: 5px; }
+#tb-toolbarcounters .message-count {
+  display: inline;
+  background-color: transparent;
+  color: #369;
+  font-family: verdana, arial, helvetica, sans-serif;
+  font-size: 11px; }
+  #tb-toolbarcounters .message-count:before {
+    content: '['; }
+  #tb-toolbarcounters .message-count:after {
+    content: ']'; }
+  #tb-toolbarcounters .message-count:empty:before {
+    content: '[0'; }
 
 /*# sourceMappingURL=notification_icons.css.map */
