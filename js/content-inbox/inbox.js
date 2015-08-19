@@ -5,6 +5,7 @@
         inbox_message_row: chrome.extension.getURL('template/inbox_message_row.html'),
         contact_row: chrome.extension.getURL('template/contact_row.html'),
         conversation: chrome.extension.getURL('template/conversation.html'),
+        conversation_reverse: chrome.extension.getURL('template/conversation_reverse.html'),
         private_message: chrome.extension.getURL('template/private_message.html'),
         load_more_messages: chrome.extension.getURL('template/load_more_messages.html'),
         load_more_contacts: chrome.extension.getURL('template/load_more_contacts.html'),
@@ -26,11 +27,23 @@
             rir.$e.contacts.find('.rir-load-more').remove();
             rir.view.addContactsToContactList(contacts);
         },
+        scrollToUnread: function(){
+            var $firstUnread = $('.rir-private-message:not(.rir-collapsed)').first();
+            var rect = $firstUnread[0].getClientRects();
+            var top = rect[0].top + window.scrollY;
+            var scrollTo = top - 190;
+            if(scrollTo <= 100) return;
+            
+            $('html, body').animate({
+                scrollTop: scrollTo
+            }, 750);
+        },
         showConversation: function(conversation){
             // Remove previous contents of main panel
             rir.$e.mainPanel.empty();
-
-            var $conversation = $(rir.templates.conversation).appendTo(rir.$e.mainPanel);
+            
+            var templateFile = rir.cfg.data.conversationNewToOld ? rir.templates.conversation_reverse : rir.templates.conversation;
+            var $conversation = $(templateFile).appendTo(rir.$e.mainPanel);
             $conversation.data('conversation', conversation);
             
             var $input = $conversation.find('textarea');
@@ -42,8 +55,11 @@
             });
             $conversation.find('#RirExportConversation').on('click', rir.view.showExportConversationOptions);
             $conversation.find('.rir-conversation-title').text(conversation.subject);
-
-            var numMessages = conversation.messages.length;
+            
+            var messages = conversation.messages.slice();
+            if(rir.cfg.data.conversationNewToOld) messages.reverse();
+            
+            var numMessages = messages.length;
             var responseId = null;
             for(var i = 1; i <= numMessages; i++) {
                 (function(pm){
@@ -55,15 +71,18 @@
                         $pm.toggleClass('rir-collapsed');
                     });
                     $pm.appendTo($messageArea);
-
-                    if(!pm['new'] && i < numMessages) {
-                        $pm.addClass('rir-collapsed');
-                    }
+                    
                     if(pm.author !== getUsername()) {
                         responseId = pm.name;
                     }
-                })(conversation.messages[numMessages - i]);
+                    if(pm['new']) return;
+                    if(rir.cfg.data.conversationNewToOld && i === 1) return;
+                    if(!rir.cfg.data.conversationNewToOld && i === numMessages) return;
+                    $pm.addClass('rir-collapsed');
+                })(messages[numMessages - i]);
             }
+            
+            if(!rir.cfg.data.conversationNewToOld) rir.view.scrollToUnread();
             
             if(!responseId) {
                 // You cannot respond unless the other person has said something
@@ -155,7 +174,7 @@
 
             if(rir.show === "conversation") {
                 // Show this conversation
-                rir.model.getConversation(rir.showid, rir.view.showConversation)
+                rir.model.getConversation(rir.showid, rir.view.showConversation);
                 // Update contact list
                 rir.model.getConversations(rir.view.updateContactList);
             }
@@ -326,6 +345,16 @@
                 var checked = $showModMail.prop('checked');
                 rir.cfg.set('showModmail', checked);
                 rir.view.showInbox(rir.model.cache.conversations, false);
+            });
+            
+            var $showNewFirst = $config.find('#RirNewFirst');
+            $showNewFirst.prop('checked', rir.cfg.data.conversationNewToOld);
+            $showNewFirst.on('change', function(){
+                var checked = $showNewFirst.prop('checked');
+                rir.cfg.set('conversationNewToOld', checked);
+                if(rir.show === "conversation") {
+                    rir.view.showNotification("Refresh page for this to take effect");
+                }
             });
             
             $config.find('#RirResetInbox').on('click', function(){

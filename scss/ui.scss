@@ -646,7 +646,7 @@ body > .rir-overlay {
         border-radius: 5px;
         padding: 10px;
         text-align: left;
-        width: 150px;
+        width: 200px;
         transition: all 0.4s ease-in-out;
         
         h2 {
@@ -667,7 +667,7 @@ body > .rir-overlay {
                 cursor: pointer;
             }
         }
-        button {
+        button, a {
             display: block;
             border-style: none;
             background-color: transparent;
@@ -682,6 +682,7 @@ body > .rir-overlay {
             text-indent: 5px;            
             width: 100%;
             color: #666;
+            font-family: Arial;
             
             &:hover {
                 color: #234;
@@ -699,7 +700,7 @@ body > .rir-overlay {
     }
     /* Shown */
     &.show > div.rir-config {
-        max-height: 120px;
+        max-height: 200px;
         padding: 10px;
         border-width: 1px;
         opacity: 1;

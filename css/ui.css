@@ -468,7 +468,7 @@ body > .rir-overlay {
     border-radius: 5px;
     padding: 10px;
     text-align: left;
-    width: 150px;
+    width: 200px;
     transition: all 0.4s ease-in-out; }
     body > .rir-overlay > div.rir-config h2 {
       color: #000;
@@ -483,7 +483,7 @@ body > .rir-overlay {
         transform: scale(0.8);
         color: #555;
         cursor: pointer; }
-    body > .rir-overlay > div.rir-config button {
+    body > .rir-overlay > div.rir-config button, body > .rir-overlay > div.rir-config a {
       display: block;
       border-style: none;
       background-color: transparent;
@@ -497,8 +497,9 @@ body > .rir-overlay {
       font-weight: bold;
       text-indent: 5px;
       width: 100%;
-      color: #666; }
-      body > .rir-overlay > div.rir-config button:hover {
+      color: #666;
+      font-family: Arial; }
+      body > .rir-overlay > div.rir-config button:hover, body > .rir-overlay > div.rir-config a:hover {
         color: #234;
         background-color: #F2F2F2; }
   body > .rir-overlay > div.rir-config {
@@ -507,7 +508,7 @@ body > .rir-overlay {
     border-width: 0px;
     opacity: 0; }
   body > .rir-overlay.show > div.rir-config {
-    max-height: 120px;
+    max-height: 200px;
     padding: 10px;
     border-width: 1px;
     opacity: 1; }

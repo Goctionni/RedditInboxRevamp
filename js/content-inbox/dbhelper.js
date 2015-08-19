@@ -210,8 +210,7 @@
         var queryParams = [db_tables.privateMessages.name, index, true, 0, -1];
         rir.proxy(['rir', 'db', 'get'], queryParams, function(messages){
             var conversations = rir.model.getConversationsFromMessages(messages);
-            console.log(conversations);
-            //callback(conversations);
+            callback(conversations[0]);
         });
     };
     

@@ -7,6 +7,7 @@ var rir_default_cfg = {
     deleted: [],
     saved: [],
     showModmail: true,
+    conversationNewToOld: false,
     doImport: true,
     maxAjaxRetries: 5,
     ajaxRetryDelay: 5,
