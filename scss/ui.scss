@@ -332,7 +332,27 @@ body > div.content {
                         float: left;
                         width: 200px;
                         color: #000;
+                        
+                        &:before {
+                            content: ' ';
+                            display: inline-block;
+                            width: 19px;
+                            height: 12px;
+                            background-image: url('chrome-extension://__MSG_@@extension_id__/images/icons.png');
+                            background-repeat: no-repeat;
+                            background-position-x: -152px;
+                            margin-right: 5px;
+                            -webkit-filter: grayscale(0.7);
+                        }
                     }
+                    
+                    &.rir-last-sent .rir-correspondent:before {
+                        background-position-y: -2px;
+                    }
+                    &.rir-last-received .rir-correspondent:before {
+                        background-position-y: -18px;
+                    }
+                    
                     .rir-subject-text {
                         position: absolute;
                         left: 250px;
@@ -859,8 +879,13 @@ body.res-nightmode {
             background-color: #222!important;
             border-bottom-color: #666!important;
             
-            .rir-correspondent, .rir-datetime {
+            .rir-datetime {
                 color: #CCC!important;
+            }
+            
+            .rir-correspondent {
+                color: #CCC!important;
+                
             }
             
             &.rir-unread {

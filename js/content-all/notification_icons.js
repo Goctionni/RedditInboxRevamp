@@ -1,5 +1,18 @@
-window.addEventListener("neverEndingLoad", function(e) { console.log(e); });
+function resCompatibility(){
+    console.log("RES detected");
+    window.addEventListener("neverEndingLoad", function(e) { console.log(e); });
+}
+
+function toolboxCompatibility(){
+    console.log("Toolbox detected");
+}
+
+onExtLoaded('res', resCompatibility);
+onExtLoaded('mod-toolbox', toolboxCompatibility);
+
 document.addEventListener("DOMContentLoaded", function() {
+    
+    
     
     var ori_mail = document.querySelector('#mail');
     var prev_element = ori_mail.previousSibling;

@@ -220,21 +220,26 @@
         for(var i = 0; i < messages.length; i++) {
             var obj = messages[i];
             if(!conversations[obj.first_message_name]) {
-                conversations[obj.first_message_name] = {id: obj.first_message_name, modmail: false, subject: '', messages: [], text: obj.body, 'new': false, last_update: obj.created_utc };
+                conversations[obj.first_message_name] = {id: obj.first_message_name, modmail: false, subject: '', last_author: obj.author, messages: [], text: obj.body, 'new': false, last_update: obj.created_utc };
             }
-            var conversaion = conversations[obj.first_message_name];
-            conversaion.messages.push(obj);
-            conversaion.subject = obj.subject;
+            var conversation = conversations[obj.first_message_name];
+            conversation.messages.push(obj);
+            conversation.subject = obj.subject;
             
-            if(obj['new']) conversaion['new'] = true;   // If any message is new, then the conversation is new
+            if(obj.created_utc > conversation.last_update) {
+                conversation.last_update = obj.created_utc;
+                conversation.last_author = obj.author;
+            }
+            
+            if(obj['new']) conversation['new'] = true;   // If any message is new, then the conversation is new
             
             if(obj.first_message_name === obj.name) {
                 // This is the first message in the conversation, try get the correspondent from it
-                conversaion.correspondent = getCorrespondentFromMsg(obj);
+                conversation.correspondent = getCorrespondentFromMsg(obj);
             }
             // If the first message is distinguished as 'moderator' we'll flag it modmail
             if(obj.first_message_name === obj.name && obj.distinguished && obj.distinguished === "moderator") {
-                conversaion.modmail = true;
+                conversation.modmail = true;
             }
         }
         return ObjectValues(conversations);

@@ -194,7 +194,13 @@
             var checkboxId = 'rir_cb_' + id;
             var html = replaceAll(rir.templates.inbox_message_row, "{checkboxid}", checkboxId);
             var $row = $(html).appendTo(rir.$e.mainPanel);
-
+            
+            if(conversation.last_author === getUsername()) {
+                $row.addClass('rir-last-sent');
+            }
+            else {
+                $row.addClass('rir-last-received');
+            }
             if(unread) $row.addClass('rir-unread');
             $row.data('conversation', conversation);
             $row.find('.rir-correspondent').text(correspondent);
@@ -508,7 +514,7 @@
                 rir.view.update();
                 rir.view.setFavicon();
             }, function(errorMessage){
-                rir.view.showNotification(message, -1);
+                rir.view.showNotification(errorMessage, -1);
                 console.error("DB has NOT been updated", arguments);
             });
         },
