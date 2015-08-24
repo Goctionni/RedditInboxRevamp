@@ -207,3 +207,8 @@ function isElementInViewport (el) {
         rect.right <= (window.innerWidth || document.documentElement.clientWidth) /*or $(window).width() */
     );
 }
+
+function killEvent(e){
+    e.stopPropagation();
+    e.preventDefault();
+}

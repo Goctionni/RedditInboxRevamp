@@ -1,4 +1,5 @@
 var rir_default_cfg = {
+    version: '0',
     pmInboxInitialized: false,
     replyInboxInitialized: false,
     maxContacts: 50,

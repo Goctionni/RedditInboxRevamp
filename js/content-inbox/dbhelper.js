@@ -25,7 +25,12 @@
         return r;
     }
 
-    rir.model.updateDb = function(callback, error) {
+    rir.model.updateDb = function(success, error) {
+        var callback = function(){
+            $.get('/message/inbox');
+            success();
+        };
+        
         rir.proxy(['rir', 'db', 'countObjectsInStore'], [db_tables.privateMessages.name], function(num){
             if(rir.cfg.data.pmInboxInitialized && num > 10) {
                 indexNexPrivateMessages(callback, error);

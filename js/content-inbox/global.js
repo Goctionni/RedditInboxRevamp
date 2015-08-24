@@ -21,11 +21,16 @@ var rir = {
             params: params
         };
         
+        if(!cmdObj.username) {
+            console.error("rir.proxy(...); requires the username (from DOM) for most features");
+        }
+        
         chrome.runtime.sendMessage(cmdObj, function(response){
             callback.apply(this, response);
         });
     },
-    helper: {}
+    helper: {},
+    manifest: chrome.runtime.getManifest()
 };
 
 (function($, undefined){
@@ -103,6 +108,7 @@ var rir = {
         return false;
     };
     
+    // Note: This function requires DOMReady because it requires getUsername() for rir.proxy()
     rir.functions.initConfig = function(callback){
         rir.proxy(['rir', 'cfg_get'], [], function(cfg){
             if(!cfg.doImport) {
@@ -113,7 +119,7 @@ var rir = {
                 if(typeof localStorage['RIR_CONFIG'] !== "undefined") {
                     // There is something to import
                     rir.cfg.data = JSON.parse(localStorage['RIR_CONFIG']);
-                    console.log("Importing old data");
+                    //console.log("Importing old data");
                 }
                 else {
                     // There is nothing to import
@@ -123,7 +129,7 @@ var rir = {
                 rir.proxy(['rir', 'cfg_import'], rir.cfg.data);
             }
             rir.init.done("CFGReady");
-            callback();
+            if(typeof callback === "function") callback();
         });
     };
     

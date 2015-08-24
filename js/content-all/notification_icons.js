@@ -51,18 +51,25 @@
         },
         initHtml: function(){
             var ori_mail = document.querySelector('#NREMail');
+            var parent_li = ori_mail.parentElement;
+            parent_li.style.display = 'none';
 
             var new_pm = document.createElement('a');
             new_pm.classList.add('rir-privatemessages');
             new_pm.setAttribute('href', '/message/rir_inbox');
+            var pm_li = document.createElement('li');
+            pm_li.appendChild(new_pm);
 
             var new_reply = document.createElement('a');
             new_reply.classList.add('rir-mail');
             new_reply.setAttribute('href', '/message/inbox/');
+            var reply_li = document.createElement('li');
+            reply_li.appendChild(new_reply);
+            
 
-            referenceElement(ori_mail)
-                .insertAfter(new_pm)
-                .insertAfter(new_reply)
+            referenceElement(parent_li)
+                .insertAfter(pm_li)
+                .insertAfter(reply_li);
 
             elements.defaultInboxIcons.push(new_reply);
             elements.rirInboxIcons.push(new_pm);
@@ -186,20 +193,20 @@
                 }
             }
             else {
-                for(var i = 0; i < elements.defaultInboxIcons.length; i++) {
-                    elements.defaultInboxIcons[i].classList.remove('rir-havemail');
+                for(var i = 0; i < elements.rirInboxIcons.length; i++) {
+                    elements.rirInboxIcons[i].classList.remove('rir-havemail');
                 }
-                for(var i = 0; i < elements.defaultInboxCounts.length; i++) {
-                    elements.defaultInboxCounts[i].innerText = '';
+                for(var i = 0; i < elements.rirInboxCounts.length; i++) {
+                    elements.rirInboxCounts[i].innerText = '';
                 }
             }
             
             if(count.reply > 0){
-                for(var i = 0; i < elements.rirInboxIcons.length; i++) {
-                    elements.rirInboxIcons[i].classList.add('rir-havemail');
+                for(var i = 0; i < elements.defaultInboxIcons.length; i++) {
+                    elements.defaultInboxIcons[i].classList.add('rir-havemail');
                 }
-                for(var i = 0; i < elements.rirInboxCounts.length; i++) {
-                    elements.rirInboxCounts[i].innerText = count.reply;
+                for(var i = 0; i < elements.defaultInboxCounts.length; i++) {
+                    elements.defaultInboxCounts[i].innerText = count.reply;
                 }
             }
             else {

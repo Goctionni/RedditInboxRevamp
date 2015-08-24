@@ -1,4 +1,4 @@
-#mail, #mailCount, #mail + .message-count, #tb-mail, #tb-mailCount, #NREMail {
+#mail, #mailCount, #mail + .message-count, #tb-mail, #tb-mailCount {
     display: none!important;
 }
 
@@ -46,12 +46,30 @@
 #NREFloat {
     .rir-privatemessages {
         float: left;
-        top: 4px;
+        top: 3px;
         margin-right: 4px;
+        background-image: url('chrome-extension://__MSG_@@extension_id__/images/icons.png');
+        background-position-x: -174px;
+        background-position-y: -1px;
+        width: 16px;
+        height: 16px;
     }
     .rir-mail {
         float: left;
-        top: 4px;
+        top: 3px;
+        background-image: url('chrome-extension://__MSG_@@extension_id__/images/icons.png');
+        background-position-x: -191px;
+        background-position-y: -1px;
+        width: 16px;
+        height: 16px;
+    }
+    .rir-havemail {
+        background-position-y: -20px!important;
+    }
+    #NREMailCount {
+        position: absolute;
+        margin-left: -24px;
+        margin-top: -15px;
     }
 }
 

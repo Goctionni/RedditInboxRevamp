@@ -101,14 +101,24 @@
                     else {
                         $input.attr('disabled', 'disabled');
                         rir.view.showLoading("Message is being sent");
-                        $.post('/api/comment', {
+                        var postXhr = $.post('/api/comment', {
                             thing_id: responseId,
-                            id: '#commentreply_' + responseId,
                             uh: rir.model.uh,
                             text: text,
-                            renderstyle: 'html'
-                        }).success(function(){
-                            rir.model.updateDb(rir.view.update, rir.view.showNotification);
+                            api_type: 'json'
+                        });
+                        
+                        postXhr.success(function(response){
+                            if(!response.json.errors || !response.json.errors.length) {
+                                rir.model.updateDb(rir.view.update, rir.view.showNotification);
+                            }
+                            else {
+                                // Something went wrong
+                                alert('Something went wrong, the error handler here is not implemented yet. Sorry!');
+                            }
+                        });
+                        postXhr.error(function(){
+                            alert('Something went wrong, the error handler here is not implemented yet. Sorry!');
                         });
                     }
                 });
@@ -196,10 +206,10 @@
             var $row = $(html).appendTo(rir.$e.mainPanel);
             
             if(conversation.last_author === getUsername()) {
-                $row.find('.rir-last-author').addClass('rir-last-sent');
+                $row.find('.rir-last-author').addClass('rir-last-sent').attr('title', 'The last message in this thread was sent by you');
             }
             else {
-                $row.addClass('rir-last-received');
+                $row.find('.rir-last-author').addClass('rir-last-received').attr('title', 'The last message in this thread was sent by ' + conversation.last_author);
             }
             if(rir.cfg.saved.contains(conversation.id)) {
                 $row.find('.rir-save-toggle').addClass('rir-saved');
@@ -259,7 +269,7 @@
             // Load page content
             rir.$e.content.html(rir.templates.inbox_layout);
             rir.$e.mainPanel = $('.rir-main-panel').width(window.innerWidth - 220);
-            rir.$e.contacts = $('.rir-contacts');
+            rir.$e.contacts = $('.rir-contacts').on('click', killEvent);
             rir.$e.search = $('#RirSearchInput');
             rir.$e.searchBtn = $('#RirSearchButton');
 
@@ -272,7 +282,7 @@
             // So that the entire page wont have to be redownloaded
             rir.$e.content.find('a.rir-link').on('click', function(e){
                 var url = $(this).attr('href');
-                var refresh = location.pathname === url;
+                var refresh = (!location.search && location.pathname === url);
                 rir.$e.search.val('');
                 e.preventDefault();
                 
@@ -302,8 +312,6 @@
         bindActionButtons: function(){
             $('#RirDelete').on('click', rir.controller.action.delete);
             $('#RirRestore').on('click', rir.controller.action.restore);
-            $('#RirSave').on('click', rir.controller.action.save);
-            $('#RirUnsave').on('click', rir.controller.action.unsave);
             $('#RirMarkRead').on('click', rir.controller.action.markRead);
             $('#RirMarkUnread').on('click', rir.controller.action.markUnread);
             $('#RirShowConfig').on('click', rir.view.showConfig);
@@ -433,6 +441,7 @@
                 rir.controller.search('from:' + contact);
                 e.preventDefault();
             });
+            $row.find('.rir-view-profile, .rir-send-message').click(function(e){ e.stopPropagation(); });
             $row.appendTo(rir.$e.contacts);
         },
         addConversationsToInbox: function(conversations){
@@ -1060,20 +1069,15 @@
         if(document.title.indexOf("Ow!") >= 0) return;
         if(!isLoggedIn()) return;
         
-        // Mark messages read
-        $.get('/message/inbox/');
-        
         // Parse the URL
         rir.controller.parseUrl();
         
-        // Initialize default layout elements
-        rir.view.setFavicon();
-        
         rir.functions.initConfig(function(){
-            rir.view.initLayout();
+            // Initialize default layout elements
+            rir.view.setFavicon();
+            rir.view.initLayout();          // To set the page title, we need our config
             rir.view.bindActionButtons();
             rir.view.showLoading();
-            
             rir.proxy(['rir', 'db', 'init'], [], rir.controller.reloadInbox);
         });
         

@@ -6,7 +6,7 @@
         "http://*.reddit.com/*", "https://*.reddit.com/*"
     ],
     "web_accessible_resources": [
-        "js/jquery.min.map", "template/*", "images/*", "Icons/16.png", "Icons/16-gray.png"
+        "js/jquery.min.map", "template/*", "images/*", "Icons/*", "manifest.json"
     ],
     "icons": {"16": "Icons/16.png",
         "48": "Icons/48.png",
@@ -23,7 +23,7 @@
         {
             "matches": ["http://*.reddit.com/message/rir_*", "https://*.reddit.com/message/rir_*"],
             "css": ["css/ui.css"],
-            "js": ["js/content-inbox/jquery.min.js", "js/content-inbox/snuownd.js", "js/global/constants.js", "js/global/extension-scanner.js", "js/content-inbox/global.js", "js/content-inbox/config.js", "js/content-inbox/generic.js", "js/content-inbox/inbox.js", "js/content-inbox/dbhelper.js", "js/legacy/idb.js"],
+            "js": ["js/content-inbox/jquery.min.js", "js/content-inbox/snuownd.js", "js/global/constants.js", "js/global/command-events.js", "js/global/extension-scanner.js", "js/content-inbox/global.js", "js/content-inbox/config.js", "js/content-inbox/generic.js", "js/content-inbox/inbox.js", "js/content-inbox/dbhelper.js", "js/legacy/idb.js"],
             "run_at": "document_start",
             "all_frames": true
         }
