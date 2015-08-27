@@ -3,6 +3,11 @@ var extensionNamespace = "RIR";
 
 (function(undefined){
     
+    var whiteList = [
+        'getUsername',
+        'rir.view.update'
+    ];
+    
     function argsToArr(args){
         var arr = [];
         for(var i = 0; i < args.length; i++) {
@@ -41,6 +46,28 @@ var extensionNamespace = "RIR";
         window.dispatchEvent(event);
     };
     
+    function whitelistCheck(path){
+        if(!(path instanceof Array)) return false;
+        var pathStr = path.join('.');
+        return (whiteList.indexOf(pathStr) > 0);
+    }
+    
+    function parsePath(path){
+        var func = window;
+        var context;
+        
+        var pathCopy = path.slice();
+        while(pathCopy.length > 0) {
+            var target = pathCopy.shift();
+            if(func[target] === undefined) {
+                return response(extensionNamespace + ": The command could not be found");
+            }
+            context = func;
+            func = func[target];
+        }
+        return {f: func, c: context};
+    }
+    
     var responseCallbacks = {};
     
     window.addEventListener(extensionNamespace + 'EventCmd', function(e){
@@ -55,23 +82,16 @@ var extensionNamespace = "RIR";
             window.dispatchEvent(responseEvent);
         }
         
-        var func = window;
-        var context;
-        
-        var pathCopy = e.detail.path.slice();
-        while(pathCopy.length > 0) {
-            var target = pathCopy.shift();
-            if(func[target] === undefined) {
-                return response(extensionNamespace + ": The command could not be found");
-            }
-            context = func;
-            func = func[target];
+        if(!whitelistCheck(e.detail.path)) {
+            return false;
         }
-        if(typeof func !== 'function'){
+        
+        var func = parsePath(e.detail.path);
+        if(!func || typeof func.f !== 'function'){
             return response(extensionNamespace + ": The requested command is not a function");
         }
         
-        var returnValue = func.apply(context, e.detail.params);
+        var returnValue = func.f.apply(func.c, e.detail.params);
         if(!returnValue) return;
         if(!e.detail.cmdKey) return;
         
