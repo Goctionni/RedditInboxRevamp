@@ -1,0 +1,140 @@
+body.rir-modal-open {
+  overflow: hidden;
+  padding-right: 17px; }
+
+.rir-config {
+  width: 800px;
+  height: 550px;
+  background-color: #EEE;
+  padding: 10px;
+  border-radius: 5px;
+  padding-bottom: 10px; }
+  .rir-config > h2 {
+    text-align: left;
+    color: #000;
+    padding-left: 5px;
+    padding-bottom: 10px;
+    font-size: 18px;
+    font-family: Arial;
+    font-weight: normal; }
+  .rir-config .rir-config-body {
+    position: relative;
+    height: 485px;
+    text-align: left;
+    color: #000; }
+    .rir-config .rir-config-body .rir-checkbox > input[type=checkbox] + label:before {
+      border-color: #333 !important; }
+    .rir-config .rir-config-body .rir-config-tabs {
+      position: absolute;
+      left: 0;
+      height: 100%;
+      width: 200px;
+      overflow: visible;
+      font-weight: bold;
+      font-size: 11px;
+      color: #333; }
+      .rir-config .rir-config-body .rir-config-tabs .rir-config-tab {
+        display: block;
+        line-height: 30px;
+        border-bottom: solid #DDD 1px;
+        padding-left: 10px;
+        cursor: pointer; }
+        .rir-config .rir-config-body .rir-config-tabs .rir-config-tab:hover {
+          background-color: #FFF;
+          color: #222; }
+        .rir-config .rir-config-body .rir-config-tabs .rir-config-tab.rir-active-tab:before {
+          content: '';
+          display: block;
+          height: 30px;
+          width: 4px;
+          background-color: #ff7700;
+          position: absolute;
+          left: -10px; }
+    .rir-config .rir-config-body .rir-config-content-panel {
+      position: absolute;
+      left: 210px;
+      height: 100%;
+      right: 0;
+      overflow: auto;
+      overflow-y: auto;
+      overflow-x: hidden;
+      font-size: 12px; }
+      .rir-config .rir-config-body .rir-config-content-panel .rir-config-content {
+        display: none; }
+        .rir-config .rir-config-body .rir-config-content-panel .rir-config-content.rir-active-tab {
+          display: block; }
+          .rir-config .rir-config-body .rir-config-content-panel .rir-config-content.rir-active-tab h3 {
+            font-size: 15px; }
+          .rir-config .rir-config-body .rir-config-content-panel .rir-config-content.rir-active-tab p {
+            white-space: normal; }
+          .rir-config .rir-config-body .rir-config-content-panel .rir-config-content.rir-active-tab p + h3, .rir-config .rir-config-body .rir-config-content-panel .rir-config-content.rir-active-tab h3 + h4 {
+            margin-top: 1em; }
+          .rir-config .rir-config-body .rir-config-content-panel .rir-config-content.rir-active-tab .rir-checkbox {
+            margin-top: 5px;
+            padding: 5px;
+            font-weight: bold; }
+          .rir-config .rir-config-body .rir-config-content-panel .rir-config-content.rir-active-tab .rir-config-info {
+            font-size: 11px;
+            padding: 0px 10px;
+            margin-bottom: 10px; }
+          .rir-config .rir-config-body .rir-config-content-panel .rir-config-content.rir-active-tab button.rir-round-action-button {
+            float: right;
+            box-sizing: border-box;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            border-style: none;
+            margin-left: 10px;
+            margin-right: 10px;
+            overflow: hidden;
+            font-size: 28px;
+            line-height: 28px;
+            position: relative;
+            background-color: #DDD;
+            border: solid #CCC 1px;
+            color: #000;
+            transition: all 0.25s ease-in-out; }
+            .rir-config .rir-config-body .rir-config-content-panel .rir-config-content.rir-active-tab button.rir-round-action-button:hover {
+              background-color: #CCC;
+              border-color: #BBB;
+              color: #000; }
+            .rir-config .rir-config-body .rir-config-content-panel .rir-config-content.rir-active-tab button.rir-round-action-button span.rir-icon {
+              position: absolute;
+              display: inline-block;
+              background-image: url("chrome-extension://__MSG_@@extension_id__/images/icons.png");
+              background-repeat: no-repeat;
+              background-position-x: -210px;
+              width: 18px;
+              height: 18px;
+              left: 50%;
+              margin-left: -7px; }
+            .rir-config .rir-config-body .rir-config-content-panel .rir-config-content.rir-active-tab button.rir-round-action-button#RirExportMessages span.rir-icon {
+              top: 5px;
+              background-position-y: 0px; }
+            .rir-config .rir-config-body .rir-config-content-panel .rir-config-content.rir-active-tab button.rir-round-action-button#RirResetInbox span.rir-icon {
+              top: 2px;
+              margin-left: -8px;
+              transform: rotate(-140deg);
+              background-position-y: -22px; }
+  .rir-config .rir-config-footer {
+    text-align: right;
+    border-top: solid #DDD 1px;
+    padding-top: 8px; }
+    .rir-config .rir-config-footer button {
+      display: inline-block !important;
+      width: auto !important;
+      padding-left: 15px !important;
+      padding-right: 15px !important;
+      text-align: center !important;
+      font-weight: normal !important;
+      margin-left: 0.5em !important;
+      line-height: 20px; }
+      .rir-config .rir-config-footer button.rir-cancel-button {
+        border: solid #DDD 1px !important;
+        background-color: #EEE !important; }
+      .rir-config .rir-config-footer button.rir-save-button {
+        border-style: none;
+        background: -webkit-linear-gradient(top, #4284dc, #3c78c8) !important;
+        color: #FFF !important; }
+
+/*# sourceMappingURL=popups.css.map */

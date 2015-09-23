@@ -9,6 +9,9 @@ var rir_default_cfg = {
     saved: [],
     showModmail: true,
     conversationNewToOld: false,
+    enhancedVisibility: false,
+    deleteDraftAfterDays: 60,
+    showDraftIndicator: true,
     doImport: true,
     maxAjaxRetries: 5,
     ajaxRetryDelay: 5,
@@ -42,16 +45,24 @@ rir.cfg_set = function(prop, val) {
     this.callback();
 };
 
-rir.cfg_get = function(prop){
-    if(typeof rir_user_cfg[this.username] === "undefined") {
-        rir_user_cfg[this.username] = rir_default_cfg;
+rir.cfg_user_get = function(prop, username){
+    if(typeof rir_user_cfg[username] === "undefined") {
+        rir_user_cfg[username] = rir_default_cfg;
     }
     
-    var cfg = rir_user_cfg[this.username];
+    var cfg = rir_user_cfg[username];
     for(var attr in rir_default_cfg){
         if(typeof cfg[attr] === "undefined") cfg[attr] = rir_default_cfg[attr];
     }
-    return (typeof prop !== "undefined") ? cfg['prop'] : cfg;
+    
+    if(typeof prop === 'undefined') {
+        return cfg;
+    }
+    return cfg[prop];
+};
+
+rir.cfg_get = function(prop){
+    return rir.cfg_user_get(prop, this.username);
 };
 
 var rir_cfg_deleted = {

@@ -62,6 +62,9 @@ body.rir-show-deleted .rir-left-panel .rir-link.rir-deleted:before {
   opacity: 1;
   transition: opacity ease-in 0.1s 0s, height linear 0.1s 0s, width linear 0.1s 0.15s; }
 
+.rir-content.rir-extra-colors .rir-last-author.rir-last-received:before {
+  -webkit-filter: sepia(100%) saturate(3) brightness(0.9); }
+
 body > div.content {
   padding: 0;
   margin: 0;
@@ -297,6 +300,11 @@ body > div.content {
           background-position-y: -2px; }
         body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row.rir-last-received .rir-correspondent:before {
           background-position-y: -18px; }
+        body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row.rir-has-draft .rir-subject-text:before {
+          content: '(Draft)';
+          color: #C77;
+          padding-right: 0.4em;
+          font-style: italic; }
         body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-message-row .rir-subject-text {
           position: absolute;
           left: 280px;
@@ -327,6 +335,30 @@ body > div.content {
         font-size: 12px;
         position: relative;
         max-width: 995px; }
+        body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation .rir-save-toggle {
+          float: left;
+          width: 30px;
+          text-align: center;
+          cursor: default;
+          user-select: none;
+          -webkit-user-select: none;
+          margin-right: 5px; }
+          body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation .rir-save-toggle:before {
+            content: '';
+            position: relative;
+            top: 3px;
+            display: inline-block;
+            width: 17px;
+            height: 17px;
+            background-image: url("chrome-extension://__MSG_@@extension_id__/images/icons.png");
+            background-repeat: no-repeat;
+            background-position-x: -134px;
+            background-position-y: -1px;
+            cursor: pointer;
+            margin-top: -2px;
+            transition: background-position-y ease-in-out 0.5s; }
+          body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation .rir-save-toggle.rir-saved:before {
+            background-position-y: -20px; }
         body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > h2.rir-conversation-title {
           font-size: 18px;
           font-weight: normal;
@@ -481,21 +513,26 @@ body > .rir-overlay {
   transition: all ease-in-out 0.5s;
   text-align: center;
   white-space: nowrap;
-  /* Hidden */
-  /* Shown */ }
+  /* Position content vertically centered */
+  /* Loading message CSS */
+  /* Export window CSS */ }
   body > .rir-overlay:before {
     content: '';
     display: inline-block;
     height: 100%;
     vertical-align: middle;
     margin-right: -0.25em; }
-  body > .rir-overlay.rir-light-overlay {
-    background-color: rgba(230, 230, 230, 0.2); }
   body > .rir-overlay.show {
     opacity: 1; }
   body > .rir-overlay > div {
     display: inline-block;
     vertical-align: middle; }
+  body > .rir-overlay > div.rir-slide-in {
+    margin-top: -50%;
+    transition: none; }
+  body > .rir-overlay.show > div.rir-slide-in {
+    margin-top: 0%;
+    transition: margin-top 0.3s ease-in-out; }
   body > .rir-overlay > div.loading-message, body > .rir-overlay > div.notification-message {
     padding: 15px;
     border-radius: 5px;
@@ -506,60 +543,6 @@ body > .rir-overlay {
       padding-top: 8px; }
       body > .rir-overlay > div.loading-message .rir-loading-status:empty, body > .rir-overlay > div.notification-message .rir-loading-status:empty {
         display: none; }
-  body > .rir-overlay > div.rir-config {
-    position: absolute;
-    top: 110px;
-    right: 15px;
-    overflow: hidden;
-    background-color: #FFF;
-    border: solid #BBB 1px;
-    border-radius: 5px;
-    padding: 10px;
-    text-align: left;
-    width: 200px;
-    transition: all 0.4s ease-in-out; }
-    body > .rir-overlay > div.rir-config h2 {
-      color: #000;
-      font-size: 14px;
-      margin-top: -5px; }
-    body > .rir-overlay > div.rir-config * + h2 {
-      margin-top: 5px; }
-    body > .rir-overlay > div.rir-config .rir-checkbox {
-      padding: 3px; }
-      body > .rir-overlay > div.rir-config .rir-checkbox label {
-        font-size: 15px;
-        transform: scale(0.8);
-        color: #555;
-        cursor: pointer; }
-    body > .rir-overlay > div.rir-config button, body > .rir-overlay > div.rir-config a {
-      display: block;
-      border-style: none;
-      background-color: transparent;
-      box-sizing: border-box;
-      border-radius: 4px;
-      padding: 0;
-      margin: 0;
-      line-height: 2em;
-      text-align: left;
-      font-size: 12px;
-      font-weight: bold;
-      text-indent: 5px;
-      width: 100%;
-      color: #666;
-      font-family: Arial; }
-      body > .rir-overlay > div.rir-config button:hover, body > .rir-overlay > div.rir-config a:hover {
-        color: #234;
-        background-color: #F2F2F2; }
-  body > .rir-overlay > div.rir-config {
-    max-height: 0px;
-    padding: 0px;
-    border-width: 0px;
-    opacity: 0; }
-  body > .rir-overlay.show > div.rir-config {
-    max-height: 200px;
-    padding: 10px;
-    border-width: 1px;
-    opacity: 1; }
   body > .rir-overlay > div.rir-export-window {
     background-color: #F2F2F2;
     display: inline-block;
@@ -706,17 +689,6 @@ body.res-nightmode .rir-main-panel .rir-conversation .rir-conversation-response 
     background-color: #444; }
 body.res-nightmode .rir-main-panel .rir-conversation .rir-conversation-response .rir-conversation-preview {
   color: #EEE; }
-body.res-nightmode .rir-overlay.rir-light-overlay {
-  background-color: rgba(30, 30, 30, 0.2); }
-  body.res-nightmode .rir-overlay.rir-light-overlay .rir-config {
-    background-color: #222;
-    border-color: #666; }
-    body.res-nightmode .rir-overlay.rir-light-overlay .rir-config h2 {
-      color: #FFF; }
-    body.res-nightmode .rir-overlay.rir-light-overlay .rir-config label, body.res-nightmode .rir-overlay.rir-light-overlay .rir-config button {
-      color: #CCC; }
-    body.res-nightmode .rir-overlay.rir-light-overlay .rir-config button:hover {
-      background-color: #000; }
 
 @keyframes spin {
   0% {

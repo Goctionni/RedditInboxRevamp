@@ -77,6 +77,11 @@ body.rir-show-deleted .rir-left-panel .rir-link.rir-deleted:before {
     }        
 }
 
+.rir-content.rir-extra-colors {
+    .rir-last-author.rir-last-received:before {
+        -webkit-filter: sepia(100%) saturate(3) brightness(0.9);
+    }
+}
 
 body > div.content {
     
@@ -393,6 +398,12 @@ body > div.content {
                     &.rir-last-received .rir-correspondent:before {
                         background-position-y: -18px;
                     }
+                    &.rir-has-draft .rir-subject-text:before {
+                        content: '(Draft)';
+                        color: #C77;
+                        padding-right: 0.4em;
+                        font-style: italic;
+                    }
                     
                     .rir-subject-text {
                         position: absolute;
@@ -438,6 +449,35 @@ body > div.content {
                     font-size: 12px;
                     position: relative;
                     max-width: 995px;
+                    
+                    .rir-save-toggle {
+                        float: left;
+                        width: 30px;
+                        text-align: center;
+                        cursor: default;
+                        user-select: none;
+                        -webkit-user-select: none;
+                        margin-right: 5px;
+                        
+                        &:before {
+                            content: '';
+                            position: relative;
+                            top: 3px;
+                            display: inline-block;
+                            width: 17px;
+                            height: 17px;
+                            background-image: url('chrome-extension://__MSG_@@extension_id__/images/icons.png');
+                            background-repeat: no-repeat;
+                            background-position-x: -134px;
+                            background-position-y: -1px;
+                            cursor: pointer;
+                            margin-top: -2px;
+                            transition: background-position-y ease-in-out 0.5s;
+                        }
+                        &.rir-saved:before {
+                            background-position-y: -20px;
+                        }
+                    }                    
                     
                     > h2.rir-conversation-title {
                         font-size: 18px;
@@ -660,6 +700,7 @@ body > .rir-overlay {
     text-align: center;
     white-space: nowrap;   
     
+    /* Position content vertically centered */
     &:before {
         content: '';
         display: inline-block;
@@ -667,20 +708,21 @@ body > .rir-overlay {
         vertical-align: middle;
         margin-right: -0.25em;
     }
-    
-    &.rir-light-overlay {
-        background-color: rgba(230,230,230,0.2);
-    }
-    
-    &.show {
-        opacity: 1;
-    }
-    
+    &.show { opacity: 1; }
     > div {
         display: inline-block;
         vertical-align: middle;
     }
+    > div.rir-slide-in {
+        margin-top: -50%;
+        transition: none;
+    }
+    &.show > div.rir-slide-in {
+        margin-top: 0%;
+        transition: margin-top 0.3s ease-in-out;
+    }
     
+    /* Loading message CSS */
     > div.loading-message, > div.notification-message {
         padding: 15px;
         border-radius: 5px;
@@ -697,76 +739,7 @@ body > .rir-overlay {
         }
     }
     
-    > div.rir-config {
-        position: absolute;
-        top: 110px;
-        right: 15px;
-        overflow: hidden;
-        background-color: #FFF;
-        border: solid #BBB 1px;
-        border-radius: 5px;
-        padding: 10px;
-        text-align: left;
-        width: 200px;
-        transition: all 0.4s ease-in-out;
-        
-        h2 {
-            color: #000;
-            font-size: 14px;
-            margin-top: -5px;
-        }
-        * + h2 {
-            margin-top: 5px;
-        }
-        .rir-checkbox {
-            padding: 3px;
-            
-            label {
-                font-size: 15px;
-                transform: scale(0.8);
-                color: #555;                
-                cursor: pointer;
-            }
-        }
-        button, a {
-            display: block;
-            border-style: none;
-            background-color: transparent;
-            box-sizing: border-box;
-            border-radius: 4px;
-            padding: 0;
-            margin: 0;
-            line-height: 2em;
-            text-align: left;
-            font-size: 12px;
-            font-weight: bold;
-            text-indent: 5px;            
-            width: 100%;
-            color: #666;
-            font-family: Arial;
-            
-            &:hover {
-                color: #234;
-                background-color: #F2F2F2;
-            }
-        }
-    }
-    
-    /* Hidden */
-    > div.rir-config {
-        max-height: 0px;
-        padding: 0px;
-        border-width: 0px;
-        opacity: 0;
-    }
-    /* Shown */
-    &.show > div.rir-config {
-        max-height: 200px;
-        padding: 10px;
-        border-width: 1px;
-        opacity: 1;
-    }
-    
+    /* Export window CSS */
     > div.rir-export-window {
         background-color: #F2F2F2;
         display: inline-block;
@@ -996,25 +969,6 @@ body.res-nightmode {
                 .rir-conversation-preview {
                     color: #EEE;
                 }
-            }
-        }
-    }
-    
-    .rir-overlay.rir-light-overlay {
-        background-color: rgba(30,30,30, 0.2);
-        
-        .rir-config {
-            background-color: #222;
-            border-color: #666;        
-            
-            h2 {
-                color: #FFF;
-            }
-            label, button {
-                color: #CCC;
-            }
-            button:hover {
-                background-color: #000;
             }
         }
     }

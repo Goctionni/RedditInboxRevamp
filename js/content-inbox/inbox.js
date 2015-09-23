@@ -50,11 +50,24 @@
             var $submit = $conversation.find('.rir-conversation-reply-btn');
             var $preview = $conversation.find('.rir-conversation-preview');
             var $messageArea = $conversation.find('.rir-private-messages');
+            var $saveToggle = $conversation.find('.rir-save-toggle');
             $conversation.find('.rir-expand-all-btn').on('click', function(){
                 $messageArea.find('.rir-private-message').removeClass('rir-collapsed');
             });
             $conversation.find('#RirExportConversation').on('click', rir.view.showExportConversationOptions);
             $conversation.find('.rir-conversation-title').text(conversation.subject);
+            
+            $saveToggle.on('click', rir.controller.action.toggleSave);
+            if(rir.cfg.saved.contains(conversation.id)) {
+                $saveToggle.addClass('rir-saved');
+            }
+            
+            rir.proxy(['drafts', 'get'], [conversation.id], function(response){
+                if(!response) return;
+                
+                $input.text(response);
+                $preview.html(rir.markdown.render(response));                
+            });
             
             var messages = conversation.messages.slice();
             if(rir.cfg.data.conversationNewToOld) messages.reverse();
@@ -66,7 +79,7 @@
                     var $pm = $(replaceAll(rir.templates.private_message, '{author}', pm.author));
                     $pm.find('.rir-pm-body').html(pm.body_html);
                     $pm.find('.rir-pm-body-short').text(pm.body);
-                    $pm.find('.rir-message-date-string').text(longDateString(pm.created_utc));
+                    $pm.find('.rir-message-date-string').text(longDateString(pm.created_utc)).attr('data-timestamp', pm.created_utc);
                     $pm.find('.rir-pm-header').on('click', function(){
                         $pm.toggleClass('rir-collapsed');
                     });
@@ -89,9 +102,17 @@
                 $conversation.find('.rir-conversation-response').remove();
             }
             else {
+                // TODO: This should be a function
+                var throttledDraftSave = throttle(function(inputText){
+                    rir.proxy(['drafts', 'set'], [conversation.id, inputText]);                    
+                }, 500);
+                
                 $input.on('keyup', function(){
-                    $preview.html(rir.markdown.render($input.val()));
+                    var inputText = $input.val();
+                    $preview.html(rir.markdown.render(inputText));
+                    throttledDraftSave(inputText);
                 });
+                // TODO: This should be a function
                 $submit.on('click', function(){
                     var text = $input.val();
                     if(!text.length) {
@@ -110,14 +131,17 @@
                         
                         postXhr.success(function(response){
                             if(!response.json.errors || !response.json.errors.length) {
+                                rir.proxy(['drafts', 'delete'], [conversation.id]);
                                 rir.model.updateDb(rir.view.update, rir.view.showNotification);
                             }
                             else {
                                 // Something went wrong
+                                // TODO: Replace alert with proper popup
                                 alert('Something went wrong, the error handler here is not implemented yet. Sorry!');
                             }
                         });
                         postXhr.error(function(){
+                            // TODO: Replace alert with proper popup
                             alert('Something went wrong, the error handler here is not implemented yet. Sorry!');
                         });
                     }
@@ -147,7 +171,18 @@
             if(!rir.cfg.data.showModmail) rir.model.modmailFilter(filteredConversations);
             
             // Show conversations
-            rir.view.addConversationsToInbox(filteredConversations);
+            // If the draft indicator should be shown, load the draft keys first
+            if(rir.cfg.data.showDraftIndicator) {
+                rir.proxy(['drafts', 'getAllKeys'], [], function(draftsKeys){
+                    rir.model.cache.draftsKeys = draftsKeys;
+                    rir.view.addConversationsToInbox(filteredConversations);
+                });
+            }
+            // If the draft indicator is disabled, empty draft keys and add conversations
+            else {
+                rir.model.cache.draftsKeys = [];
+                rir.view.addConversationsToInbox(filteredConversations);
+            }
 
             // Show contacts
             rir.view.updateContactList(conversations);
@@ -199,7 +234,8 @@
                 correspondent = conversation.correspondent,
                 subject = conversation.subject,
                 message = conversation.text.replace('&amp;', "&").replace('&lt;', "<").replace('&gt;', ">"),
-                datetime = conversation.last_update;
+                datetime = conversation.last_update,
+                hasDraft = (rir.model.cache.draftsKeys.indexOf(id) >= 0);
 
             var checkboxId = 'rir_cb_' + id;
             var html = replaceAll(rir.templates.inbox_message_row, "{checkboxid}", checkboxId);
@@ -214,9 +250,10 @@
             if(rir.cfg.saved.contains(conversation.id)) {
                 $row.find('.rir-save-toggle').addClass('rir-saved');
             }
-            $row.find('.rir-save-toggle').on('click', rir.controller.action.toggleSave)
+            $row.find('.rir-save-toggle').on('click', rir.controller.action.toggleSave);
             
             if(unread) $row.addClass('rir-unread');
+            if(hasDraft) $row.addClass('rir-has-draft');
             $row.data('conversation', conversation);
             $row.find('.rir-correspondent').text(correspondent);
             $row.find('.rir-subject').text(subject);
@@ -265,7 +302,12 @@
             // Create global container
             rir.$e.content = $('<div class="rir-content">').appendTo($('body > .content'));
             rir.$e.overlay = $('<div class="rir-overlay">').appendTo(rir.$e.body);
-
+            
+            // Enhanced Visibility
+            if(rir.cfg.data.enhancedVisibility){
+                rir.$e.content.addClass('rir-extra-colors');
+            }
+            
             // Load page content
             rir.$e.content.html(rir.templates.inbox_layout);
             rir.$e.mainPanel = $('.rir-main-panel').width(window.innerWidth - 220);
@@ -327,8 +369,8 @@
                 e.stopPropagation();
             });
             
-            rir.$e.overlay.empty().removeClass('rir-light-overlay').append($export);
-            rir.view.showOverlay(null, true);
+            rir.$e.overlay.empty().append($export);
+            rir.view.showOverlay(true);
             
             // This should not be needed, but apparently it is
             e.stopPropagation();
@@ -349,60 +391,99 @@
                 e.stopPropagation();
             });
             
-            rir.$e.overlay.empty().removeClass('rir-light-overlay').append($export);
-            rir.view.showOverlay(null, true);
+            rir.$e.overlay.empty().append($export);
+            rir.view.showOverlay(true);
             
             // This should not be needed, but apparently it is
             e.stopPropagation();
         },
         showConfig: function(){
             var $config = $(rir.templates.config);
+            $config.on('click', stopEvent);
             
-            var $showModMail = $config.find('#RirShowModMail');
-            $showModMail.prop('checked', rir.cfg.data.showModmail);
-            $showModMail.on('change', function(){
-                var checked = $showModMail.prop('checked');
-                rir.cfg.set('showModmail', checked);
-                rir.view.showInbox(rir.model.cache.conversations, false);
+            // TABS
+            var contentTabs = {};
+            var $contentTabs = $config.find('.rir-config-content-panel .rir-config-content');
+            $contentTabs.each(function(){
+                var $content = $(this);
+                var name = $content.data('tab-content');
+                contentTabs[name] = $content;
             });
             
-            var $showNewFirst = $config.find('#RirNewFirst');
-            $showNewFirst.prop('checked', rir.cfg.data.conversationNewToOld);
-            $showNewFirst.on('change', function(){
-                var checked = $showNewFirst.prop('checked');
-                rir.cfg.set('conversationNewToOld', checked);
-                if(rir.show === "conversation") {
-                    rir.view.showNotification("Refresh page for this to take effect");
-                }
+            var $tabs = $config.find('.rir-config-tabs .rir-config-tab');
+            $tabs.on('click', function(){
+                var $tab = $(this);
+                var name = $tab.data('tab');
+                $tabs.removeClass('rir-active-tab');
+                $tab.addClass('rir-active-tab');
+                
+                $contentTabs.removeClass('rir-active-tab');
+                contentTabs[name].addClass('rir-active-tab');
             });
             
+            // Buttons
             $config.find('#RirResetInbox').on('click', function(){
-                rir.$e.overlay.empty().removeClass('rir-light-overlay').off();
+                rir.$e.overlay.empty().off();
                 rir.controller.resetInbox();
             });
             $config.find('#RirExportMessages').on('click', rir.view.showExportAllOptions);
-            $config.on('click', function(e){
-                e.stopPropagation();
+            
+            // Set checkbox-states
+            var $showModMail = $config.find('#RirShowModMail');
+            $showModMail.prop('checked', rir.cfg.data.showModmail);
+            
+            var $showNewFirst = $config.find('#RirNewFirst');
+            $showNewFirst.prop('checked', rir.cfg.data.conversationNewToOld);
+            
+            var $enhancedVisibility = $config.find('#RirEnhancedVisibility');
+            $enhancedVisibility.prop('checked', rir.cfg.data.enhancedVisibility);
+            
+            var $showDraftIndicator = $config.find('#RirShowDraftIndicator');
+            $showDraftIndicator.prop('checked', rir.cfg.data.showDraftIndicator);
+            
+            // Save settings
+            $config.find('.rir-config-footer .rir-save-button').on('click', function(){
+                var showModmail = $showModMail.prop('checked');
+                var showNewFirst = $showNewFirst.prop('checked');
+                var enhancedVisibility = $enhancedVisibility.prop('checked');
+                var showDraftIndicator = $showDraftIndicator.prop('checked');
+                
+                if(enhancedVisibility) rir.$e.content.addClass('rir-extra-colors');
+                else rir.$e.content.removeClass('rir-extra-colors');
+                    
+                rir.cfg.set('showModmail', showModmail);
+                rir.cfg.set('conversationNewToOld', showNewFirst);
+                rir.cfg.set('enhancedVisibility', enhancedVisibility);
+                rir.cfg.set('showDraftIndicator', showDraftIndicator);
+                
+                if(rir.show === "conversation") {
+                    rir.view.showNotification("Refresh page for this to take effect");
+                }
+                else {
+                    rir.view.showInbox(rir.model.cache.conversations, false);
+                }
+                rir.view.hideOverlay();
             });
             
+            rir.$e.body.addClass('rir-modal-open');
             rir.$e.overlay.empty().append($config);
-            rir.view.showOverlay('rir-light-overlay', true);
+            rir.view.showOverlay(true, function(){
+                rir.$e.body.removeClass('rir-modal-open');
+            });
         },
-        showOverlay: function(addClass, clickToDismiss){
+        showOverlay: function(clickToDismiss, dismissCallback){
             rir.$e.overlay.show();
             setTimeout(function(){
                 rir.$e.overlay.addClass('show');
-            }, 10)
+            }, 10);
             
-            if(typeof addClass === "string") {
-                rir.$e.overlay.addClass(addClass);
-            }
             if(typeof clickToDismiss === "boolean" && clickToDismiss) {
                 rir.$e.overlay.on('click', rir.view.hideOverlay);
+                if(typeof dismissCallback === 'function') dismissCallback();
             }
         },
         hideOverlay: function(){
-            rir.$e.overlay.off().removeClass('show rir-light-overlay');
+            rir.$e.overlay.off().removeClass('show');
             setTimeout(function(){
                 rir.$e.overlay.hide();
             }, 600);
@@ -566,6 +647,7 @@
             var format = $ele.data('format');
             
             var conversations = rir.model.cache.conversations.slice();
+            conversations = rir.model.cloneAndSortConversations(conversations);
             
             // Filter deleted and modmail, if that's configged
             if(!rir.cfg.data.showModmail) rir.model.modmailFilter(conversations);
@@ -645,6 +727,11 @@
             },
             CSV: function(conversations){
                 var messages = rir.model.removeConversationContexts(conversations);
+                messages.sort(function(a, b){
+                    if(a.created_utc === b.created_utc) return 0;
+                    return (a.created_utc > b.created_utc) ? 1 : -1;
+                });
+                
                 var sampleMessage = messages[0];
                 var keys = Object.keys(sampleMessage);
                 var csvRows = [keys];
@@ -670,13 +757,19 @@
                     }
                     var conversation = conversations[i];
                     txt += '# ' + conversation.subject + "\r\n\r\n";
-                    for(var j = 0; j < conversation.messages.length; j++) {
+                    var messages = conversation.messages;
+                    messages.sort(function(a, b){
+                        if(a.created_utc === b.created_utc) return 0;
+                        return (a.created_utc > b.created_utc) ? 1 : -1;
+                    });
+                    
+                    for(var j = 0; j < messages.length; j++) {
                         if(j > 0) {
                             txt += "\r\n---\r\n";
                         }
                         
-                        var message = conversation.messages[j];
-                        txt += 'From: ' + message.author + ' | Date / time: ' + sysDateStr(message.created_utc * 1000) + ' ' + sysTimeStr(message.created_utc * 1000, ':') + ' UTC' + "\r\n\r\n";
+                        var message = messages[j];
+                        txt += '## From: ' + message.author + ' | Date / time: ' + sysDateStr(message.created_utc * 1000) + ' ' + sysTimeStr(message.created_utc * 1000, ':') + ' UTC' + "\r\n\r\n";
                         txt += message.body.replace("\r", "").replace("\n", "\r\n") + "\r\n";
                     }
                 }
@@ -685,7 +778,20 @@
             'SINGLE-HTML': function(conversations){
                 var $eleClone = $('.rir-conversation').clone();
                 $eleClone.find('.rir-conversation-response').remove();
+                $eleClone.find('.rir-pm-body-short').remove();
                 $eleClone.find('.rir-private-message').removeClass('rir-collapsed');
+                
+                // Sort messages from old to new
+                var $pmContainer = $eleClone.find('.rir-private-messages');
+                var $pms = $pmContainer.children().remove();
+                $pms.sort(function(a, b){
+                    var ta = parseInt($(a).find('.rir-message-date-string').attr('data-timestamp'));
+                    var tb = parseInt($(b).find('.rir-message-date-string').attr('data-timestamp'));
+                    if(ta === tb) return 0;
+                    return (ta > tb) ? 1 : -1;
+                });
+                $pmContainer.append($pms);
+                
                 $eleClone.find('button').remove();
                 var html =  $eleClone.html();
                 
@@ -710,14 +816,12 @@
             var format = $ele.data('format');
             
             var conversations = [$('.rir-conversation').data('conversation')];
-            
-            // Filter deleted and modmail, if that's configged
-            if(!rir.cfg.data.showModmail) rir.model.modmailFilter(conversations);
-            rir.model.directoryFilter(conversations, 'inbox');
+            conversations = rir.model.cloneAndSortConversations(conversations);
             
             if($('#RedactUsernames').prop('checked') && format !== 'SINGLE-HTML') {
                 conversations = rir.model.names.substituteUsernames(conversations);
             }
+            
             
             var data = rir.controller.exportFormats[format](conversations, e);
             
@@ -744,7 +848,14 @@
             },
             toggleSave: function(e){
                 var $ele = $(this);
-                var id = $ele.closest('.rir-message-row').data('conversation').id;
+                var id;
+                if(rir.show === "conversation") {
+                    id = $ele.closest('.rir-conversation').data('conversation').id;
+                }
+                else {
+                    id = $ele.closest('.rir-message-row').data('conversation').id;
+                }
+                
                 if($ele.hasClass('rir-saved')) {
                     rir.cfg.saved.remove(id);
                     $ele.removeClass('rir-saved');
@@ -775,8 +886,12 @@
                 }
                 
                 if(!conversations.length) return;
-                var msg = (conversations.length === 1) ? 'The message was deleted' : 'The messages were deleted';
-                rir.view.showNotification(msg);
+                rir.view.showNotification('Deleted');
+                if(rir.show === "conversation") {
+                    // Go to inbox
+                    history.pushState({}, rir.cfg.data.pageTitle, '/message/rir_inbox');
+                    rir.view.update();
+                }
             },
             restore: function(){
                 var conversations = rir.controller.action.conversations;
@@ -794,8 +909,12 @@
                 }
                 
                 if(!conversations.length) return;
-                var msg = (conversations.length === 1) ? 'The message was restored' : 'The messages were restored';
-                rir.view.showNotification(msg);
+                rir.view.showNotification('Restored');
+                if(rir.show === "conversation") {
+                    // Go to inbox
+                    history.pushState({}, rir.cfg.data.pageTitle, '/message/rir_inbox');
+                    rir.view.update();
+                }
             },
             save: function(){
                 var conversations = rir.controller.action.conversations;
@@ -834,27 +953,51 @@
                 var conversations = rir.controller.action.conversations;
                 for(var i = 0; i < conversations.length; i++) {
                     var conversation = conversations[i];
-                    conversation.$e.removeClass('rir-unread');
-                    delete conversation['$e'];
+                    if(conversation.$e) {
+                        conversation.$e.removeClass('rir-unread');
+                        delete conversation['$e'];
+                    }
                     rir.model.setConversationStatus(conversation, true);
                 }
                 
                 if(!conversations.length) return;
-                var msg = (conversations.length === 1) ? 'The message was marked read' : 'The messages were marked read';
-                rir.view.showNotification(msg);
+                if(rir.show === "conversation") {
+                    // Go to inbox
+                    rir.view.showNotification('Marked read');
+                    history.pushState({}, rir.cfg.data.pageTitle, '/message/rir_inbox');
+                    rir.view.update();
+                }
+                else {
+                    // Deselect selected items
+                    var $rows = $('.rir-message-row.rir-row-checked');
+                    $rows.removeClass('rir-row-checked');
+                    $rows.find('input[type=checkbox]').prop('checked', false);
+                }
             },
             markUnread: function(){
                 var conversations = rir.controller.action.conversations;
                 for(var i = 0; i < conversations.length; i++) {
                     var conversation = conversations[i];
-                    conversation.$e.addClass('rir-unread');
-                    delete conversation['$e'];
+                    if(conversation.$e) {
+                        conversation.$e.addClass('rir-unread');
+                        delete conversation['$e'];
+                    }
                     rir.model.setConversationStatus(conversation, false);
                 }
                 
                 if(!conversations.length) return;
-                var msg = (conversations.length === 1) ? 'The message was marked unread' : 'The messages were marked unread';
-                rir.view.showNotification(msg);
+                if(rir.show === "conversation") {
+                    // Go to inbox
+                    rir.view.showNotification('Marked unread');
+                    history.pushState({}, rir.cfg.data.pageTitle, '/message/rir_inbox');
+                    rir.view.update();
+                }
+                else {
+                    // Deselect selected items
+                    var $rows = $('.rir-message-row.rir-row-checked');
+                    $rows.removeClass('rir-row-checked');
+                    $rows.find('input[type=checkbox]').prop('checked', false);
+                }
             }
         }
     };
@@ -867,9 +1010,9 @@
                     updated.push(conversation.messages[i]);
                 }
             }
-            rir.proxy(['rir', 'db', 'updateAll'], [db_tables.privateMessages.name, updated], function(){
-                
-            });
+            if(updated.length > 0) {
+                rir.proxy(['rir', 'db', 'updateAll'], [db_tables.privateMessages.name, updated]);
+            }
         },
         getSortedContactsFromConversations: function(conversations){
             var contacts = {};
@@ -1036,6 +1179,23 @@
                 return copy;
             }
         },
+        cloneAndSortConversations: function(conversations, oldToNew){
+            if(typeof oldToNew === "undefined") {
+                oldToNew = true;
+            }
+            var clone = JSON.parse(JSON.stringify(conversations));
+            clone.sort(function(a, b){
+                if(a.last_update === b.last_update) return 0;
+                return (a.last_update > b.last_update) ? 1 : -1;
+            });
+            for(var i = 0; i < clone.length; i++) {
+                clone[i].messages.sort(function(a, b){
+                    if(a.created_utc === b.created_utc) return 0;
+                    return (a.created_utc > b.created_utc) ? 1 : -1;
+                });
+            }
+            return clone;
+        },
         getConversationContexts: function(conversations){
             var contexts = [];
             for(var i = 0; i < conversations.length; i++) {
@@ -1056,7 +1216,8 @@
             return messages;
         },
         cache: {
-            conversations: []
+            conversations: [],
+            draftsKeys: []
         }
     };
     rir.markdown = SnuOwnd.getParser();

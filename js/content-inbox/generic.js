@@ -15,6 +15,36 @@ function isMessageHTMLEncoded(message){
     return (message.body_html.length >= 21 && message.body_html.substring(0, 21) === '&lt;!-- SC_OFF --&gt;');
 }
 
+function throttle(func, wait) {
+    var context, args, result;
+    var timeout = null;
+    var previous = 0;
+    var later = function() {
+        previous = getTime();
+        timeout = null;
+        result = func.apply(context, args);
+        if(!timeout) context = args = null;
+    };
+    return function() {
+        var now = getTime();
+        var remaining = wait - (now - previous);
+        context = this;
+        args = arguments;
+        if(remaining <= 0 || remaining > wait) {
+            if(timeout) {
+                clearTimeout(timeout);
+                timeout = null;
+            }
+            previous = now;
+            result = func.apply(context, args);
+            if(!timeout) context = args = null;
+        } else if(!timeout) {
+            timeout = setTimeout(later, remaining);
+        }
+        return result;
+    };
+};
+
 function ObjectValues(obj){
     var arr = [];
     var keys = Object.keys(obj);
@@ -109,8 +139,11 @@ function getTime(){
 }
 
 function sysDateStr(date){
-    if(typeof d === "undefined") {
+    if(typeof date === "undefined") {
         date = new Date();
+    }
+    else if(typeof date === "number") {
+        date = new Date(date);
     }
     var str = date.getFullYear() + '-';
     
@@ -128,8 +161,11 @@ function sysDateStr(date){
 function sysTimeStr(date, sep){
     if(typeof sep !== "string") sep = '.';
     
-    if(typeof d === "undefined") {
+    if(typeof date === "undefined") {
         date = new Date();
+    }
+    else if(typeof date === "number") {
+        date = new Date(date);
     }
     var h = date.getHours();
     if(h < 10) h = "0" + h;
@@ -211,4 +247,7 @@ function isElementInViewport (el) {
 function killEvent(e){
     e.stopPropagation();
     e.preventDefault();
+}
+function stopEvent(e){
+    e.stopPropagation();
 }
