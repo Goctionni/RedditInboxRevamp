@@ -626,6 +626,48 @@ body > div.content {
                     }
                     > div.rir-conversation-response {
                         padding: 10px;
+                        
+                        .rir-comment-tools {
+                            float: right;
+                            
+                            > button {
+                                box-sizing: border-box;
+                                border: solid #CCC 1px;
+                                background-color: #FFF;
+                                background-image: url('chrome-extension://__MSG_@@extension_id__/images/commenttools.png');
+                                background-position-x: 7px;
+                                background-repeat: no-repeat;
+                                width: 32px;
+                                height: 21px;
+                                display: inline-block;
+                                overflow: hidden;
+                                text-indent: 50px;
+                                margin-left: 4px;
+                                transition: all 0.15s ease-in-out;
+                                
+                                &:hover {
+                                    background-color: #EEE;
+                                }
+                                
+                                &.rir-ct-bold { background-position-y: 2px; }
+                                &.rir-ct-italic { background-position-y: -18px; }
+                                &.rir-ct-strike { background-position-y: -38px; }
+                                &.rir-ct-super { background-position-y: -58px; }
+                                &.rir-ct-link { background-position-y: -78px; }
+                                &.rir-ct-quote { background-position-y: -98px; }
+                                &.rir-ct-code { background-position-y: -118px; }
+                                &.rir-ct-bullet { background-position-y: -138px; }
+                                &.rir-ct-number { background-position-y: -158px; }
+                                &.rir-ct-table { background-position-y: -178px; }
+                            }
+                        }
+                        > h3 {
+                            font-size: 18px;
+                            font-weight: normal;
+                            padding-bottom: 5px;                            
+                        }
+                        
+                        
                         textarea.rir-conversation-input {
                             box-sizing: border-box;
                             font-family: Arial, sans-serif;

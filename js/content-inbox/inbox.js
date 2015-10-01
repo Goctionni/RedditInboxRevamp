@@ -47,6 +47,7 @@
             $conversation.data('conversation', conversation);
             
             var $input = $conversation.find('textarea');
+            var $tools = $conversation.find('.rir-comment-tools');
             var $submit = $conversation.find('.rir-conversation-reply-btn');
             var $preview = $conversation.find('.rir-conversation-preview');
             var $messageArea = $conversation.find('.rir-private-messages');
@@ -112,6 +113,9 @@
                     $preview.html(rir.markdown.render(inputText));
                     throttledDraftSave(inputText);
                 });
+                
+                rir.commentTools.init($tools, $input);
+                
                 // TODO: This should be a function
                 $submit.on('click', function(){
                     var text = $input.val();

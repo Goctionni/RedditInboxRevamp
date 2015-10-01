@@ -457,6 +457,48 @@ body > div.content {
               display: none; }
         body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response {
           padding: 10px; }
+          body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response .rir-comment-tools {
+            float: right; }
+            body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response .rir-comment-tools > button {
+              box-sizing: border-box;
+              border: solid #CCC 1px;
+              background-color: #FFF;
+              background-image: url("chrome-extension://__MSG_@@extension_id__/images/commenttools.png");
+              background-position-x: 7px;
+              background-repeat: no-repeat;
+              width: 32px;
+              height: 21px;
+              display: inline-block;
+              overflow: hidden;
+              text-indent: 50px;
+              margin-left: 4px;
+              transition: all 0.15s ease-in-out; }
+              body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response .rir-comment-tools > button:hover {
+                background-color: #EEE; }
+              body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response .rir-comment-tools > button.rir-ct-bold {
+                background-position-y: 2px; }
+              body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response .rir-comment-tools > button.rir-ct-italic {
+                background-position-y: -18px; }
+              body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response .rir-comment-tools > button.rir-ct-strike {
+                background-position-y: -38px; }
+              body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response .rir-comment-tools > button.rir-ct-super {
+                background-position-y: -58px; }
+              body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response .rir-comment-tools > button.rir-ct-link {
+                background-position-y: -78px; }
+              body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response .rir-comment-tools > button.rir-ct-quote {
+                background-position-y: -98px; }
+              body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response .rir-comment-tools > button.rir-ct-code {
+                background-position-y: -118px; }
+              body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response .rir-comment-tools > button.rir-ct-bullet {
+                background-position-y: -138px; }
+              body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response .rir-comment-tools > button.rir-ct-number {
+                background-position-y: -158px; }
+              body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response .rir-comment-tools > button.rir-ct-table {
+                background-position-y: -178px; }
+          body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response > h3 {
+            font-size: 18px;
+            font-weight: normal;
+            padding-bottom: 5px; }
           body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-conversation-response textarea.rir-conversation-input {
             box-sizing: border-box;
             font-family: Arial, sans-serif;
