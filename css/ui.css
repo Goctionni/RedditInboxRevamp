@@ -414,6 +414,9 @@ body > div.content {
                   font-weight: bold;
                   color: #222;
                   display: inline; }
+                  body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-private-messages .rir-private-message .rir-pm-header .rir-title-text h4:hover {
+                    color: #369;
+                    text-decoration: underline; }
                 body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-private-messages .rir-private-message .rir-pm-header .rir-title-text .rir-pm-body-short {
                   display: none; }
               body > div.content .rir-content .rir-content-panels .rir-main-panel .rir-conversation > div.rir-private-messages .rir-private-message .rir-pm-header .rir-right {
@@ -568,7 +571,9 @@ body > .rir-overlay {
     opacity: 1; }
   body > .rir-overlay > div {
     display: inline-block;
-    vertical-align: middle; }
+    vertical-align: middle;
+    font-size: 12px;
+    text-align: left; }
   body > .rir-overlay > div.rir-slide-in {
     margin-top: -50%;
     transition: none; }

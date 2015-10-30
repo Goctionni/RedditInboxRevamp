@@ -1,0 +1,93 @@
+.rir-alert {
+    
+    background-color: #FFF;
+    border-radius: 4px;
+    padding: 5px;
+    min-width: 450px;
+    
+    .rir-alert-title {
+        border-radius: 3px;
+        background-color: #cee3f8;
+        padding: 5px;
+        line-height: 25px;
+        padding-left: 10px;
+        padding-right: 10px;
+        
+        h4.rir-alert-title-text {
+            display: inline-block;
+            font-size: 16px;
+            color: #000;
+        }
+        button.rir-alert-close {
+            float: right;
+            background: transparent;
+            border-style: none;
+            overflow: visible;
+            box-sizing: border-box;
+            width: 25px;
+            height: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #000;
+            opacity: 0.6;
+            
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+    .rir-alert-message {
+        margin: 5px;
+        
+        .rir-alert-input-label {
+            position: relative;
+            display: block;
+            line-height: 35px;
+            margin-bottom: 5px;
+            background-color: #F4F4F4;
+            border-radius: 3px;
+            text-indent: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-left: -5px;
+            margin-right: -5px;
+            color: #666;
+            
+            input {
+                position: absolute;
+                box-sizing: border-box;
+                top: 5px;
+                right: 5px;
+                width: 60%;
+                height: 25px;
+                border: solid #CCC 1px;
+                border-radius: 2px;
+                padding: 5px;
+            }
+        }
+    }
+    .rir-alert-buttons {
+        margin-top: 10px;
+        text-align: right;
+        
+        button {
+            border: solid #DDD 1px;
+            border-radius: 3px;
+            background-color: #F9F9F9;
+            min-width: 100px;
+            text-align: center;
+            line-height: 20px;
+            
+            &:hover {
+                background-color: #F4F4F4;
+                border-color: #CCC;
+            }
+        }
+    }
+    
+    &.rir-alert-error {
+        .rir-alert-title {
+            background-color: #ECC;
+        }
+    }
+}

@@ -13,6 +13,8 @@ var rir_default_cfg = {
     deleteDraftAfterDays: 60,
     showDraftIndicator: true,
     doImport: true,
+    rememberInputheight: false,
+    inputHeight: 80,
     maxAjaxRetries: 5,
     ajaxRetryDelay: 5,
     max403Retries: 15

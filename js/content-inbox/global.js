@@ -89,12 +89,26 @@ var rir = {
     };
     
     // Preload HTML templates
+    rir.templates = {
+        add: function(obj){
+            var objKeys = Object.keys(obj);
+            for(var i = 0; i < objKeys.length; i++) {
+                var k = objKeys[i];
+                rir.templates[k] = obj[k];
+            }
+        }
+    };
     rir.functions.preloadTemplatesReady = function(){
         var tArray = Object.keys(rir.templates);
         var loadedTemplates = 0;
         for(var i = 0; i < tArray.length; i++) {
             (function(template){
-                $.get(rir.templates[template])
+                var url = rir.templates[template];
+                if(typeof url !== "string") {
+                    return ++loadedTemplates;
+                }
+                
+                $.get(url)
                     .success(function(html){
                         rir.templates[template] = html;
                     })

@@ -1,6 +1,6 @@
 (function($){
     
-    rir.templates = {
+    rir.templates.add({
         inbox_layout: chrome.extension.getURL('template/inbox_layout.html'),
         inbox_message_row: chrome.extension.getURL('template/inbox_message_row.html'),
         contact_row: chrome.extension.getURL('template/contact_row.html'),
@@ -15,7 +15,7 @@
         export_all_to_html: chrome.extension.getURL('template/export_all_to_html.html'),
         export_conversation_window: chrome.extension.getURL('template/export_conversation_window.html'),
         export_conversation_to_html: chrome.extension.getURL('template/export_conversation_to_html.html')
-    };
+    });
 
     rir.init.funcs.push(rir.functions.DOMReady);
     rir.init.funcs.push(rir.functions.preloadTemplatesReady);
@@ -84,6 +84,12 @@
                     $pm.find('.rir-pm-header').on('click', function(){
                         $pm.toggleClass('rir-collapsed');
                     });
+                    $pm.find('.rir-title-text h4').on('click', function(e){
+                        e.stopPropagation();
+
+                        window.open('/user/' + this.innerText, '_blank');
+                    });
+                    
                     $pm.appendTo($messageArea);
                     
                     if(pm.author !== getUsername()) {
@@ -114,6 +120,12 @@
                     throttledDraftSave(inputText);
                 });
                 
+                if(rir.cfg.data.rememberInputheight) {
+                    $input.height(rir.cfg.data.inputHeight);
+                }
+                rir.controller.addTextareaResizeEvent($input);
+                $input.on('resize', rir.view.inputResizeHandler);
+                
                 rir.commentTools.init($tools, $input);
                 
                 // TODO: This should be a function
@@ -121,7 +133,7 @@
                     var text = $input.val();
                     if(!text.length) {
                         // This should not be an alert
-                        alert('You cannot send empty messages!');
+                        rir.alerts.error('Error', 'You cannot send empty messages!');
                     }
                     else {
                         $input.attr('disabled', 'disabled');
@@ -140,13 +152,13 @@
                             }
                             else {
                                 // Something went wrong
-                                // TODO: Replace alert with proper popup
-                                alert('Something went wrong, the error handler here is not implemented yet. Sorry!');
+                                // TODO: Use the error message
+                                rir.alerts.error('Error', 'Something went wrong, the error handler here is not implemented yet. Sorry!');
                             }
                         });
                         postXhr.error(function(){
-                            // TODO: Replace alert with proper popup
-                            alert('Something went wrong, the error handler here is not implemented yet. Sorry!');
+                            // TODO: Show relevant error message
+                            rir.alerts.error('Error', 'Something went wrong, the error handler here is not implemented yet. Sorry!');
                         });
                     }
                 });
@@ -194,6 +206,12 @@
             // Hide overlay
             if(hideOverlay)
             rir.view.hideOverlay();        
+        },
+        inputResizeHandler: function(){
+            if(!rir.cfg.data.rememberInputheight) return;
+            
+            var curHeight = $(this).height();
+            rir.cfg.set('inputHeight', curHeight);
         },
         setFavicon: function(){
             var conversations = rir.model.cache.conversations;
@@ -445,12 +463,16 @@
             var $showDraftIndicator = $config.find('#RirShowDraftIndicator');
             $showDraftIndicator.prop('checked', rir.cfg.data.showDraftIndicator);
             
+            var $rememberInputHeight = $config.find('#RirRememberInputHeight');
+            $rememberInputHeight.prop('checked', rir.cfg.data.rememberInputheight);
+            
             // Save settings
             $config.find('.rir-config-footer .rir-save-button').on('click', function(){
                 var showModmail = $showModMail.prop('checked');
                 var showNewFirst = $showNewFirst.prop('checked');
                 var enhancedVisibility = $enhancedVisibility.prop('checked');
                 var showDraftIndicator = $showDraftIndicator.prop('checked');
+                var rememberInputheight = $rememberInputHeight.prop('checked');
                 
                 if(enhancedVisibility) rir.$e.content.addClass('rir-extra-colors');
                 else rir.$e.content.removeClass('rir-extra-colors');
@@ -459,6 +481,7 @@
                 rir.cfg.set('conversationNewToOld', showNewFirst);
                 rir.cfg.set('enhancedVisibility', enhancedVisibility);
                 rir.cfg.set('showDraftIndicator', showDraftIndicator);
+                rir.cfg.set('rememberInputheight', rememberInputheight);
                 
                 if(rir.show === "conversation") {
                     rir.view.showNotification("Refresh page for this to take effect");
@@ -476,21 +499,32 @@
             });
         },
         showOverlay: function(clickToDismiss, dismissCallback){
+            rir.model.cache.hideOverlay = false;
             rir.$e.overlay.show();
             setTimeout(function(){
                 rir.$e.overlay.addClass('show');
             }, 10);
             
             if(typeof clickToDismiss === "boolean" && clickToDismiss) {
-                rir.$e.overlay.on('click', rir.view.hideOverlay);
-                if(typeof dismissCallback === 'function') dismissCallback();
+                setTimeout(function(){
+                    rir.$e.overlay.children().on('click', stopEvent);
+                    rir.$e.overlay.on('click', function(){
+                        if(typeof dismissCallback === 'function') dismissCallback();
+                        rir.view.hideOverlay();
+                    });
+                }, 10);
             }
         },
         hideOverlay: function(){
-            rir.$e.overlay.off().removeClass('show');
+            rir.model.cache.hideOverlay = true;
             setTimeout(function(){
-                rir.$e.overlay.hide();
-            }, 600);
+                if(!rir.model.cache.hideOverlay) return;
+                rir.$e.overlay.off().removeClass('show');
+                setTimeout(function(){
+                    if(!rir.model.cache.hideOverlay) return;
+                    rir.$e.overlay.hide();
+                }, 600);
+            }, 50);
         },
         isLoading: function(){
             return $('.rir-overlay.show .loading-message').length > 0;
@@ -591,6 +625,19 @@
         }
     };
     rir.controller = {
+        addTextareaResizeEvent: function(element){
+            var $ele = $(element);
+            $ele.data('w', $ele.width());
+            $ele.data('h', $ele.height());
+            
+            $ele.on('mouseup', function(){
+                if($ele.data('w') !== $ele.width() || $ele.data('h') !== $ele.height()) {
+                    $ele.data('w', $ele.width());
+                    $ele.data('h', $ele.height());
+                    $ele.trigger('resize');
+                }
+            });
+        },
         resetInbox: function(){
             rir.view.showLoading('Clearing inbox');
             rir.proxy(['rir', 'db', 'clearObjectStore'], [db_tables.privateMessages.name], function(){
@@ -674,7 +721,7 @@
             HTML: function(conversations, e){
                 e.stopPropagation();
                 e.preventDefault();
-                alert('Not yet implemented');
+                rir.alerts.error('Error', 'This feature has not been implemented yet');
             },
             MySQL: function(conversations){
                 var sql = rir.templates.export_all_to_mysql;
@@ -1221,7 +1268,8 @@
         },
         cache: {
             conversations: [],
-            draftsKeys: []
+            draftsKeys: [],
+            hideOverlay: false
         }
     };
     rir.markdown = SnuOwnd.getParser();

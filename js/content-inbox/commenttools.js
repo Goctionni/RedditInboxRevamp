@@ -1,17 +1,82 @@
+rir.templates.add({
+    commenttools_link: chrome.extension.getURL('template/commenttools_link.html')
+});
+
 rir.commentTools = {
     utils: {
-        linkSelection: function (src) {
-            // Change this to custom implementation
-            var url = prompt('Enter the URL:', '');
-            if (url !== null) {
-                //escape parens in url
-                url = url.replace(/[\(\)]/g, '\\$&');
-                rir.commentTools.utils.wrapSelection(src, '[', '](' + url + ')', function (text) {
-                    //escape brackets and parens in text
-                    text = text.replace(/[\[\]\(\)]/g, '\\$&');
-                    return text;
-                });
+        getSelectedText: function(src){
+            var $input = rir.commentTools.dom.$input(src);
+            var input = $input[0];
+            
+            //We will restore the selection later, so record the current selection.
+            var selectionStart = input.selectionStart;
+            var selectionEnd = input.selectionEnd;
+
+            var text = input.value;
+            var selectedText = text.substring(selectionStart, selectionEnd);
+
+            //Markdown doesn't like it when you tag a word like **this **. The space messes it up. So we'll account for that because Firefox selects the word, and the followign space when you double click a word.
+            var trailingSpace = '';
+            var cursor = selectedText.length - 1;
+            while (cursor > 0 && selectedText[cursor] === ' ') {
+                trailingSpace += ' ';
+                cursor--;
             }
+            return selectedText.substring(0, cursor + 1);
+        },
+        isValidLink: function(text){
+            if(typeof text !== "string") return false;
+            if(!text.length) return false;
+            if(text.substring(0, 1) === '/') return true;
+            if(text.substring(0, 1) === '#') return true;
+            
+            var index = text.indexOf('://');
+            if(index < 0) return false;
+            var protocol = text.substring(0, index);
+            return (protocol.search(/^[a-zA-Z]*$/) !== -1);
+        },
+        linkSelection: function (src) {
+            var buttons = {
+                "Ok": function(){
+                    var $alert = $(this).closest('.rir-alert');
+                    var url = $alert.find('.rir-alert-input-url').val();
+                    var text = $alert.find('.rir-alert-input-text').val();
+                    if(!url || !text) return;
+                    
+                    var replacement = '[' + text + '](' + url + ')';
+                    rir.commentTools.utils.replaceSelection(src, replacement);
+                    setTimeout(function(){
+                        rir.commentTools.dom.$input(src).focus().keyup();
+                    }, 100);
+                },
+                "Cancel": function(){
+                    rir.commentTools.dom.$input(src).focus();
+                }
+            };
+            
+            var selectedText = rir.commentTools.utils.getSelectedText(src);
+            var $alert = rir.alerts.html('Create link', rir.templates.commenttools_link, buttons);
+            var $urlInput = $alert.find('.rir-alert-input-url');
+            var $textInput = $alert.find('.rir-alert-input-text');
+            if(rir.commentTools.utils.isValidLink(selectedText)) {
+                $urlInput.val(selectedText);
+                setTimeout(function(){ $textInput.focus(); }, 75);
+            }
+            else {
+                $textInput.val(selectedText);
+                setTimeout(function(){ $urlInput.focus(); }, 75);
+            }
+            
+            $alert.find('input').on('keydown', function(e){
+                if(e.keyCode === rir.commentTools.keyCodes.ENTER){
+                    buttons.Ok.call(this, e);
+                    rir.view.hideOverlay();
+                }
+                else if(e.keyCode === rir.commentTools.keyCodes.ESCAPE) {
+                    buttons.Calcel.call(this, e);
+                    rir.view.hideOverlay();
+                }
+            });
         },
         wrapSelection: function (src, prefix, suffix, escapeFunction) {
             var $input = rir.commentTools.dom.$input(src);
@@ -169,6 +234,22 @@ rir.commentTools = {
         },
         updateCounter: function(src){
             console.error("Char counter not implemented");
+        },
+        tableEditor: {
+            //$('textarea')
+            showPopup: function(){
+                
+            },
+            editCell: function(){
+                
+            },
+            preventPipe: function(ele){
+                $(ele).on('keydown', function(e){
+                    if(e.keyCode === 220 && e.shiftKey){
+                        e.preventDefault();
+                    }
+                });
+            }
         }
     },
     dom: {
@@ -225,7 +306,8 @@ rir.commentTools = {
                 e.preventDefault();
             },
             table: function(e){
-                console.error('Fuck this for now');
+                alert('Not yet implemented, sorry!');
+                //console.error('Fuck this for now');
             }
         };
     },
