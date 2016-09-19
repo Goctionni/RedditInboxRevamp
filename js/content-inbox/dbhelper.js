@@ -1,7 +1,9 @@
+/* global db_tables */
+
 (function(undefined){
     
     rir.helper.fixPrivateMessage = function(obj) {
-        var msg = getObjAttributes(obj, db_tables.privateMessages.columns);
+        var msg = getObjAttributes(obj, db_tables.pm_messages.columns);
         if(!msg.author && obj.subreddit) msg.author = '#' + obj.subreddit;
         if(!msg.author) msg.author = "[unknown]";
         if(!msg.first_message_name) msg.first_message_name = msg.name;
@@ -25,54 +27,77 @@
         return r;
     }
 
+    rir.model.getRedditFriends = function(){
+        return new Promise(function(pass, fail){
+            // TODO: Support for more than 100 friends (ie: create generic listing traverser)
+            var jqPromise = $.get('/prefs/friends.json?limit=100');
+            jqPromise.done(function(response){
+                var friends = [];
+                var friendsRaw = response[0].data.children;
+                for(var i = 0; i < friendsRaw.length; i++) {
+                    friends.push(friendsRaw[i].name);
+                }
+                pass(friends);
+            });
+            jqPromise.fail(function(){
+                fail();
+            });
+        });
+    };
+    
     rir.model.updateDb = function(success, error) {
         var callback = function(){
             $.get('/message/inbox');
             success();
         };
         
-        rir.proxy(['rir', 'db', 'countObjectsInStore'], [db_tables.privateMessages.name], function(num){
-            if(rir.cfg.data.pmInboxInitialized && num > 10) {
-                indexNexPrivateMessages(callback, error);
+        if(rir.cfg.data.pmInboxInitialized) {
+            indexNexPrivateMessages(callback, error);
+
+            // Check to see if reddit_friends has to be updated
+            var now = (new Date()).getTime();
+            var timeSinceLastFriendsUpdate = now - rir.cfg.data.lastUpdateFriends;
+            if(timeSinceLastFriendsUpdate < (1000 * 60 * 60 * 24)) {
+                // If this was recent, don't update it
+                rir.view.updateContactList();
             }
             else {
-                if(typeof localStorage['RIR_CONFIG'] !== "undefined") {
-                    var oldConfig = JSON.parse(localStorage['RIR_CONFIG']);
-                    if(oldConfig.pmInboxInitialized instanceof Array && oldConfig.pmInboxInitialized.indexOf(getUsername()) >= 0) {
-                        rir.view.showStatus("Importing messages from old database to new database");
-                        rir.legacy.importOldDb(function(){
-                            rir.legacy.db.destroy(getUsername());
-                            var index = oldConfig.pmInboxInitialized.indexOf(getUsername());
-                            oldConfig.pmInboxInitialized.splice(index, 1);
-                            localStorage['RIR_CONFIG'] = JSON.stringify(oldConfig);
-                            callback();
-                        }, error);
-                        return;
-                    }
-                }
-                
-                new PMIndexer(function(){
-                    rir.cfg.set('pmInboxInitialized', true);
-                    callback();
-                }, error);
-                
-            }
-        });
-    };
-    
-    rir.legacy = {
-        importOldDb: function(callback, error){
-            rir.legacy.db.openDb(getUsername(), function(){
-                rir.legacy.db.getAll(db_tables.privateMessages.name, 'created_utc', false, function(messages){
-                    for(var i = 0; i < messages.length; i++) {
-                        messages[i] = rir.helper.fixPrivateMessage(messages[i]);
-                    }
-                    rir.proxy(['rir', 'db', 'addAll'], [db_tables.privateMessages.name, messages], function(numAdded){
-                        rir.cfg.set('pmInboxInitialized', true);
-                        rir.model.updateDb(callback, error);
-                    });
+                // If it has been longer than 24 hours, update friends
+                var friendsPromise = rir.model.getRedditFriends();
+                friendsPromise.then(function(friends){
+                    rir.proxy(['rir', 'db', 'contacts', 'updateFriends'], [friends], rir.view.updateContactList);
+                    rir.cfg.set('lastUpdateFriends', now);
+                }, function(){
+                    console.error('Failed to fetch reddit_friends');
                 });
-            });
+            }
+        }
+        else {
+            new PMIndexer(function(){
+                // When Indexing private messages is done, set initialized to true
+                rir.cfg.set('pmInboxInitialized', true);
+
+                // Mark messages in normal reddit inbox as read
+                callback();
+
+                // Check to see if reddit_friends has to be updated
+                var now = (new Date()).getTime();
+                var timeSinceLastFriendsUpdate = now - rir.cfg.data.lastUpdateFriends;
+                if(timeSinceLastFriendsUpdate < (1000 * 60 * 60 * 24)) {
+                    // If this was recent, don't update it
+                    rir.view.updateContactList();
+                }
+                else {
+                    // If it has been longer than 24 hours, update friends
+                    var friendsPromise = rir.model.getRedditFriends();
+                    friendsPromise.then(function(friends){
+                        rir.proxy(['rir', 'db', 'contacts', 'updateFriends'], [friends], rir.view.updateContactList);
+                        rir.cfg.set('lastUpdateFriends', now);
+                    }, function(){
+                        console.error('Failed to fetch reddit_friends');
+                    });
+                }
+            }, error);
         }
     };
     
@@ -84,6 +109,7 @@
         this.forbidden = null;
         this.errorCount = 0;
         this.pageNum = 1;
+        this.messagesAdded = 0;
         
         this.request();
     }
@@ -118,7 +144,12 @@
         }
 
         this.pageNum++;
-        addPMDataToDatabase(response, iterationCallback, this);
+        var _this = this;
+        function messagesAddedCallback(numMessages){
+            _this.messagesAdded += numMessages;
+            iterationCallback.call(_this);
+        }
+        addPMDataToDatabase(response, messagesAddedCallback, this);
     };
     
     PMIndexer.prototype.requestError = function(e, textStatus, errorThrown){
@@ -142,15 +173,11 @@
     };
 
     function indexNexPrivateMessages(callback, fail) {
-        var queryParams = [
-            db_tables.privateMessages.name, 'created_utc', true, 0, rir.cfg.data.max403Retries
-        ];
-
-        rir.proxy(['rir', 'db', 'get'], queryParams, function(latestMessages){
+        rir.proxy(['rir', 'db', 'privateMessages', 'getLatestMessages'], [0, rir.cfg.data.max403Retries], function(latestMessages){
             var index = 0;
             function tryNext(){
-                if(index < latestMessages.length) {
-                    var indexer = new PMIndexer(callback, fail, 'before', latestMessages[index++].name);
+                if(index < latestMessages.results.length) {
+                    var indexer = new PMIndexer(callback, fail, 'before', latestMessages.results[index++].name);
                     indexer.setForbiddenCallback(tryNext);
                 }
                 else {
@@ -163,8 +190,8 @@
 
     function addPMDataToDatabase(response, callback, context) {
         var messages = extractPrivateMessages(response);
-        rir.proxy(['rir', 'db', 'addAll'], [db_tables.privateMessages.name, messages], function(numAdded){
-            callback.call(context);
+        rir.proxy(['rir', 'db', 'privateMessages', 'add'], [messages], function(numMessagesAdded){
+            callback.call(context, numMessagesAdded);
         });
     }
 
@@ -199,58 +226,19 @@
         else {
             return (msg.author[0] === '#') ? msg.dest : msg.author;
         }
-    }    
-    
-    rir.model.getConversations = function(callback){
-        var queryParams = [db_tables.privateMessages.name, 'created_utc', true, 0, -1];
-        rir.proxy(['rir', 'db', 'get'], queryParams, function(messages){
-            var conversations = rir.model.getConversationsFromMessages(messages);
+    }
+
+    rir.model.getConversations = function(callback, folder = "inbox"){
+        let action = 'get' + folder.substr(0, 1).toUpperCase() + folder.substr(1);
+        rir.proxy(['rir', 'db', 'privateMessages', action], [], function(conversations){
             callback(conversations);
         });
     };
     
     rir.model.getConversation = function(name, callback){
-        //first_message_name
-        var index = {
-            key: 'first_message_name',
-            value: name
-        };
-        var queryParams = [db_tables.privateMessages.name, index, true, 0, -1];
-        rir.proxy(['rir', 'db', 'get'], queryParams, function(messages){
-            var conversations = rir.model.getConversationsFromMessages(messages);
-            callback(conversations[0]);
+        rir.proxy(['rir', 'db', 'privateMessages', 'getConversation'], [name], function(conversation){
+            callback(conversation);
         });
     };
-    
-    //rir_db.updateMessage bg func
-    rir.model.getConversationsFromMessages = function(messages){
-        var conversations = {};
-        for(var i = 0; i < messages.length; i++) {
-            var obj = messages[i];
-            if(!conversations[obj.first_message_name]) {
-                conversations[obj.first_message_name] = {id: obj.first_message_name, modmail: false, subject: '', last_author: obj.author, messages: [], text: obj.body, 'new': false, last_update: obj.created_utc };
-            }
-            var conversation = conversations[obj.first_message_name];
-            conversation.messages.push(obj);
-            conversation.subject = obj.subject;
-            
-            if(obj.created_utc > conversation.last_update) {
-                conversation.last_update = obj.created_utc;
-                conversation.last_author = obj.author;
-            }
-            
-            if(obj['new']) conversation['new'] = true;   // If any message is new, then the conversation is new
-            
-            if(obj.first_message_name === obj.name) {
-                // This is the first message in the conversation, try get the correspondent from it
-                conversation.correspondent = getCorrespondentFromMsg(obj);
-            }
-            // If the first message is distinguished as 'moderator' we'll flag it modmail
-            if(obj.first_message_name === obj.name && obj.distinguished && obj.distinguished === "moderator") {
-                conversation.modmail = true;
-            }
-        }
-        return ObjectValues(conversations);
-    };
-    
+
 })();

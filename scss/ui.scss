@@ -20,7 +20,7 @@ body > #header {
 
 body.rir-show-inbox .rir-left-panel .rir-link.rir-inbox:before,
 body.rir-show-saved .rir-left-panel .rir-link.rir-saved:before,
-body.rir-show-deleted .rir-left-panel .rir-link.rir-deleted:before {
+body.rir-show-trash .rir-left-panel .rir-link.rir-trash:before {
     position: absolute;
     left: -10px;
     width: 5px;
@@ -262,6 +262,11 @@ body > div.content {
                             text-overflow: ellipsis;
                             cursor: default;
                             color: #000;
+                        }
+                        &.rir-reddit-friend {
+                            .rir-contact-name {
+                                font-style: italic;
+                            }
                         }
 
                         .rir-contact-buttons {

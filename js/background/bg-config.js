@@ -4,6 +4,10 @@ var rir_default_cfg = {
     replyInboxInitialized: false,
     maxContacts: 50,
     maxInitialMessagesShown: 50,
+    updatePopularInterval: 60 * 60 * 24,
+    lastUpdatePopular: 0,
+    lastUpdateFriends: 0,
+    show_friends_first: 0,
     pageTitle: 'reddit.com: Revamped inbox',
     deleted: [],
     saved: [],
@@ -36,27 +40,27 @@ rir.cfg_import = function(cfg) {
     if(typeof cfg.replyInboxInitialized === "object" && cfg.replyInboxInitialized instanceof Array) {
         cfg.replyInboxInitialized = (cfg.replyInboxInitialized.indexOf(this.username) >= 0);
     }
-    
+
     rir_user_cfg[this.username] = cfg;
     rir_cfg_save();
 };
 
-rir.cfg_set = function(prop, val) {
+rir.cfg_set = function(prop, val, callback = true) {
     rir_user_cfg[this.username][prop] = val;
     rir_cfg_save();
-    this.callback();
+    if(callback) this.callback();
 };
 
 rir.cfg_user_get = function(prop, username){
     if(typeof rir_user_cfg[username] === "undefined") {
         rir_user_cfg[username] = rir_default_cfg;
     }
-    
+
     var cfg = rir_user_cfg[username];
     for(var attr in rir_default_cfg){
         if(typeof cfg[attr] === "undefined") cfg[attr] = rir_default_cfg[attr];
     }
-    
+
     if(typeof prop === 'undefined') {
         return cfg;
     }

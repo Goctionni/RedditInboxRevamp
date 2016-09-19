@@ -21,11 +21,12 @@
     rir.init.funcs.push(rir.functions.preloadTemplatesReady);
 
     rir.view = {
-        updateContactList: function(conversations){
-            var contacts = rir.model.getSortedContactsFromConversations(conversations);
-            rir.$e.contacts.find('.rir-contact').remove();
-            rir.$e.contacts.find('.rir-load-more').remove();
-            rir.view.addContactsToContactList(contacts);
+        updateContactList: function(){
+            rir.proxy(['rir', 'db', 'contacts', 'getMostPopular'], [], function(contacts){
+                rir.$e.contacts.find('.rir-contact').remove();
+                rir.$e.contacts.find('.rir-load-more').remove();
+                rir.view.addContactsToContactList(contacts);
+            });
         },
         scrollToUnread: function(){
             var $firstUnread = $('.rir-private-message:not(.rir-collapsed)').first();
@@ -62,14 +63,13 @@
             if(rir.cfg.saved.contains(conversation.id)) {
                 $saveToggle.addClass('rir-saved');
             }
-            
             rir.proxy(['drafts', 'get'], [conversation.id], function(response){
                 if(!response) return;
                 
                 $input.text(response);
                 $preview.html(rir.markdown.render(response));                
             });
-            
+
             var messages = conversation.messages.slice();
             if(rir.cfg.data.conversationNewToOld) messages.reverse();
             
@@ -109,7 +109,6 @@
                 $conversation.find('.rir-conversation-response').remove();
             }
             else {
-                // TODO: This should be a function
                 var throttledDraftSave = throttle(function(inputText){
                     rir.proxy(['drafts', 'set'], [conversation.id, inputText]);                    
                 }, 500);
@@ -177,32 +176,26 @@
             rir.$e.mainPanel.empty();
             
             // Cache the fetched conversations
-            rir.model.cache.conversations = conversations;
-            rir.view.setFavicon();
+            rir.view.setFavicon(conversations);
             
             // Filter conversations
-            var filteredConversations = conversations.slice();
-            rir.model.searchFilter(filteredConversations);
-            rir.model.directoryFilter(filteredConversations);
-            if(!rir.cfg.data.showModmail) rir.model.modmailFilter(filteredConversations);
-            
+            // rir.model.searchFilter(filteredConversations);
+            // TODO: Reimplement
+
             // Show conversations
             // If the draft indicator should be shown, load the draft keys first
             if(rir.cfg.data.showDraftIndicator) {
                 rir.proxy(['drafts', 'getAllKeys'], [], function(draftsKeys){
                     rir.model.cache.draftsKeys = draftsKeys;
-                    rir.view.addConversationsToInbox(filteredConversations);
+                    rir.view.addConversationsToInbox(conversations);
                 });
             }
             // If the draft indicator is disabled, empty draft keys and add conversations
             else {
                 rir.model.cache.draftsKeys = [];
-                rir.view.addConversationsToInbox(filteredConversations);
+                rir.view.addConversationsToInbox(conversations);
             }
 
-            // Show contacts
-            rir.view.updateContactList(conversations);
-            
             // Hide overlay
             if(hideOverlay)
             rir.view.hideOverlay();        
@@ -213,18 +206,18 @@
             var curHeight = $(this).height();
             rir.cfg.set('inputHeight', curHeight);
         },
-        setFavicon: function(){
-            var conversations = rir.model.cache.conversations;
-            
+        setFavicon: function(conversations){
             // Set icon to colored version if there are new messages
             var icon = '16-gray.png';
-            for(var i = 0; i < conversations.length; i++) {
-                if(conversations[i]['new']) {
-                    icon = '16.png';
-                    break;
+            if(isDef(conversations)) {
+                for(var i = 0; i < conversations.length; i++) {
+                    if(conversations[i]['unread']) {
+                        icon = '16.png';
+                        break;
+                    }
                 }
             }
-            
+
             $('head link[rel="shortcut icon"]').remove();
 
             var link = document.createElement('link');
@@ -242,34 +235,32 @@
             if(rir.show === "conversation") {
                 // Show this conversation
                 rir.model.getConversation(rir.showid, rir.view.showConversation);
-                // Update contact list
-                rir.model.getConversations(rir.view.updateContactList);
             }
-            if(['inbox', 'saved', 'deleted'].indexOf(rir.show) >= 0) {
+            if(['inbox', 'saved', 'trash'].indexOf(rir.show) >= 0) {
                 // Fetch all conversations and add them to the inbox view
-                rir.model.getConversations(rir.view.showInbox);
+                rir.model.getConversations(rir.view.showInbox, rir.show);
             }
         },
         addMessageInInbox: function(conversation) {
-            var unread = conversation['new'],
+            var unread = !!conversation['unread'],
                 id = conversation.id,
                 correspondent = conversation.correspondent,
                 subject = conversation.subject,
-                message = conversation.text.replace('&amp;', "&").replace('&lt;', "<").replace('&gt;', ">"),
-                datetime = conversation.last_update,
+                message = conversation.last_message_summary.replace('&amp;', "&").replace('&lt;', "<").replace('&gt;', ">"),
+                datetime = conversation.last_update_at,
                 hasDraft = (rir.model.cache.draftsKeys.indexOf(id) >= 0);
 
             var checkboxId = 'rir_cb_' + id;
             var html = replaceAll(rir.templates.inbox_message_row, "{checkboxid}", checkboxId);
             var $row = $(html).appendTo(rir.$e.mainPanel);
             
-            if(conversation.last_author === getUsername()) {
+            if(conversation.last_message_author === getUsername()) {
                 $row.find('.rir-last-author').addClass('rir-last-sent').attr('title', 'The last message in this thread was sent by you');
             }
             else {
                 $row.find('.rir-last-author').addClass('rir-last-received').attr('title', 'The last message in this thread was sent by ' + conversation.last_author);
             }
-            if(rir.cfg.saved.contains(conversation.id)) {
+            if(conversation.saved) {
                 $row.find('.rir-save-toggle').addClass('rir-saved');
             }
             $row.find('.rir-save-toggle').on('click', rir.controller.action.toggleSave);
@@ -292,8 +283,8 @@
             });
         },
         updateBodyClass: function(){
-            if(['inbox', 'saved', 'deleted'].indexOf(rir.show) < 0) return;
-            rir.$e.body.removeClass('rir-show-inbox rir-show-saved rir-show-deleted');
+            if(['inbox', 'saved', 'trash'].indexOf(rir.show) < 0) return;
+            rir.$e.body.removeClass('rir-show-inbox rir-show-saved rir-show-trash');
             rir.$e.body.addClass('rir-show-' + rir.show);
         },
         initLayout: function(){
@@ -345,11 +336,12 @@
             // Rebind the inbox / saved / deleted buttons
             // So that the entire page wont have to be redownloaded
             rir.$e.content.find('a.rir-link').on('click', function(e){
+                e.preventDefault();
+
                 var url = $(this).attr('href');
                 var refresh = (!location.search && location.pathname === url);
                 rir.$e.search.val('');
-                e.preventDefault();
-                
+
                 if(refresh) {
                     rir.controller.reloadInbox();
                 }
@@ -396,11 +388,6 @@
             
             // This should not be needed, but apparently it is
             e.stopPropagation();
-            
-            // Make sure we have all conversations in cache
-            rir.model.getConversations(function(conversations){
-                rir.model.cache.conversations = conversations;
-            });
         },
         showExportConversationOptions: function(e){
             var html = rir.templates.export_conversation_window;
@@ -491,6 +478,10 @@
                 }
                 rir.view.hideOverlay();
             });
+            // Cancel
+            $config.find('.rir-config-footer .rir-cancel-button').on('click', function(){
+                rir.view.hideOverlay();
+            });
             
             rir.$e.body.addClass('rir-modal-open');
             rir.$e.overlay.empty().append($config);
@@ -553,52 +544,65 @@
             }, duration);
         },
         addContactToList: function(contact) {
-            var html = replaceAll(rir.templates.contact_row, '{username}', contact);
+            var html = replaceAll(rir.templates.contact_row, '{username}', contact.username);
             var $row = $(html).data('user', contact);
             $row.find('.rir-show-messages').on('click', function(e){
-                rir.$e.search.val('from:' + contact);
-                rir.controller.search('from:' + contact);
+                rir.$e.search.val('from:' + contact.username);
+                rir.controller.search('from:' + contact.username);
                 e.preventDefault();
             });
+
+            if(contact.reddit_friend) {
+                $row.addClass('rir-reddit-friend');
+            }
+
             $row.find('.rir-view-profile, .rir-send-message').click(function(e){ e.stopPropagation(); });
             $row.appendTo(rir.$e.contacts);
         },
         addConversationsToInbox: function(conversations){
-            var copy = conversations.slice();
-            var conversationsAdded = 0;
-            for(var i = 0; i < copy.length; i++) {
-                var conversation = copy[i];
+            for(var i = 0; i < conversations.results.length; i++) {
+                var conversation = conversations.results[i];
                 
                 // Add message to inbox
                 rir.view.addMessageInInbox(conversation);
-                
-                // If the maximum number of conversations has been added
-                if(++conversationsAdded > rir.cfg.data.maxInitialMessagesShown){
-                    // Add load more content element
-                    rir.view.addLoadMoreElement(
-                        rir.templates['load_more_messages'],
-                        rir.$e.mainPanel,
-                        rir.view.addConversationsToInbox,
-                        copy.splice(i + 1));
-                        
-                    break;
+            }
+
+            var lastMessageIndex = conversations.start + conversations.results.length;
+            if(lastMessageIndex < conversations.total) {
+                function loadMore(){
+                    rir.proxy(
+                        ['rir', 'db', 'privateMessages', 'getInbox'],
+                        [lastMessageIndex],
+                        rir.view.addConversationsToInbox);
                 }
+
+                // If there are more conversations left, add the load more element
+                rir.view.addLoadMoreElement(
+                    rir.templates['load_more_messages'],
+                    rir.$e.mainPanel,
+                    loadMore);
             }
         },
         addContactsToContactList: function(contacts){
-            for(var i = 0; i < contacts.length; i++) {
-                var contact = contacts[i];
+            for(var i = 0; i < contacts.results.length; i++) {
+                var contact = contacts.results[i];
                 rir.view.addContactToList(contact);
-                
-                if((i + 1) === rir.cfg.data.maxContacts) {
-                    rir.view.addLoadMoreElement(
-                        rir.templates['load_more_contacts'],
-                        rir.$e.contacts,
-                        rir.view.addContactsToContactList,
-                        contacts.splice(i + 1)
-                        );
-                    break;
+            }
+
+            var lastContactIndex = contacts.start + contacts.results.length;
+            if(lastContactIndex < contacts.total) {
+                function loadMore(){
+                    rir.proxy(
+                        ['rir', 'db', 'contacts', 'getMostPopular'],
+                        [lastContactIndex],
+                        rir.view.addContactsToContactList);
                 }
+
+                // If there are more conversations left, add the load more element
+                rir.view.addLoadMoreElement(
+                    rir.templates['load_more_contacts'],
+                    rir.$e.contacts,
+                    loadMore);
             }
         },
         showStatus: function(statusMsg){
@@ -612,13 +616,13 @@
                 }, 1000);
             }
         },
-        addLoadMoreElement: function(html, $container, callback, items){
+        addLoadMoreElement: function(html, $container, callback){
             var $element = $(html).appendTo($container);
             var scrollCallback = function(){
                 if(!isElementInViewport($element)) return;
                 $(window).off('scroll', scrollCallback);
                 $element.remove();
-                callback(items);
+                callback();
             };
             $(window).on('scroll', scrollCallback);
             scrollCallback();
@@ -648,9 +652,9 @@
         showMessageClick: function() {
             var conversation = $(this).data('conversation');
             history.pushState({}, rir.cfg.data.pageTitle, '/message/rir_conversation/' + conversation.id);
-            rir.controller.parseUrl();            
-            rir.view.showConversation(conversation);
-            
+            rir.controller.parseUrl();
+            rir.model.getConversation(rir.showid, rir.view.showConversation);
+
             // Scroll to the top
             window.scrollTo(0, 0);
         },
@@ -658,7 +662,6 @@
             rir.view.showLoading();
             rir.model.updateDb(function(){
                 rir.view.update();
-                rir.view.setFavicon();
             }, function(errorMessage){
                 rir.view.showNotification(errorMessage, -1);
                 console.error("DB has NOT been updated", arguments);
@@ -669,7 +672,7 @@
             rir.view.update();
         },
         parseUrl: function(){
-            delete rir['showid'];
+            delete rir.showid;
             var pathParts = location.pathname.split('/');
             if(pathParts[2] === "rir_conversation" && pathParts.length >= 4) {
                 rir.show = "conversation";
@@ -678,8 +681,8 @@
             else if(pathParts[2] === "rir_saved"){
                 rir.show = "saved";
             }
-            else if(pathParts[2] === "rir_deleted"){
-                rir.show = "deleted";
+            else if(pathParts[2] === "rir_trash"){
+                rir.show = "trash";
             }
             else {
                 rir.show = "inbox";
@@ -696,14 +699,9 @@
         exportAll: function(e){
             var $ele = $(this);
             var format = $ele.data('format');
-            
-            var conversations = rir.model.cache.conversations.slice();
-            conversations = rir.model.cloneAndSortConversations(conversations);
-            
-            // Filter deleted and modmail, if that's configged
-            if(!rir.cfg.data.showModmail) rir.model.modmailFilter(conversations);
-            rir.model.directoryFilter(conversations, 'inbox');
-            
+
+            // TODO: Reimplement, get from db
+
             if($('#RedactUsernames').prop('checked')) {
                 conversations = rir.model.names.substituteUsernames(conversations);
             }
@@ -885,7 +883,7 @@
                 if(rir.show === "conversation") {
                     return [$('.rir-conversation').data('conversation')];
                 }
-                else if(['inbox', 'saved', 'deleted'].indexOf(rir.show) >= 0) {
+                else if(['inbox', 'saved', 'trash'].indexOf(rir.show) >= 0) {
                     var conversations = [];
                     var $checked = $('.rir-message-row .rir-checkbox input[type="checkbox"]:checked');
                     $checked.each(function(){
@@ -908,11 +906,11 @@
                 }
                 
                 if($ele.hasClass('rir-saved')) {
-                    rir.cfg.saved.remove(id);
+                    rir.proxy(['rir', 'db', 'privateMessages', 'unsaveConversation'], [id]);
                     $ele.removeClass('rir-saved');
                 }
                 else {
-                    rir.cfg.saved.add(id);
+                    rir.proxy(['rir', 'db', 'privateMessages', 'saveConversation'], [id]);
                     $ele.addClass('rir-saved');
                 }
 
@@ -923,17 +921,17 @@
                 for(var i = 0; i < conversations.length; i++) {
                     var conversation = conversations[i];
                     var id = conversation.id;
-                    if(!rir.cfg.deleted.contains(id)) {
-                        rir.cfg.deleted.add(id);
-                        if(rir.show === "conversation") {
-                            history.back();
-                        }
-                        else if(rir.show !== "deleted") {
-                            conversation.$e.slideUp(function(){
-                                conversation.$e.remove();
-                            });
-                        }
+
+
+                    if(rir.show === "conversation") {
+                        history.back();
                     }
+                    else if(rir.show !== "trash") {
+                        conversation.$e.slideUp(function(){
+                            conversation.$e.remove();
+                        });
+                    }
+                    rir.proxy(['rir', 'db', 'privateMessages', 'moveConversationToTrash'], [id]);
                 }
                 
                 if(!conversations.length) return;
@@ -949,14 +947,16 @@
                 for(var i = 0; i < conversations.length; i++) {
                     var conversation = conversations[i];
                     var id = conversation.id;
-                    if(rir.cfg.deleted.contains(id)) {
-                        rir.cfg.deleted.remove(id);
-                        if(rir.show === "deleted") {
-                            conversation.$e.slideUp(function(){
-                                conversation.$e.remove();
-                            });
-                        }
+
+                    // If we are in the trash folder, remove this listing
+                    if(rir.show === "trash") {
+                        conversation.$e.slideUp(function(){
+                            conversation.$e.remove();
+                        });
                     }
+
+                    // Update database
+                    rir.proxy(['rir', 'db', 'privateMessages', 'restoreConversationFromTrash'], [id]);
                 }
                 
                 if(!conversations.length) return;
@@ -966,38 +966,6 @@
                     history.pushState({}, rir.cfg.data.pageTitle, '/message/rir_inbox');
                     rir.view.update();
                 }
-            },
-            save: function(){
-                var conversations = rir.controller.action.conversations;
-                for(var i = 0; i < conversations.length; i++) {
-                    var id = conversations[i].id;
-                    if(!rir.cfg.saved.contains(id)) {
-                        rir.cfg.saved.add(id);
-                    }
-                }
-                
-                if(!conversations.length) return;
-                var msg = (conversations.length === 1) ? 'The message was saved' : 'The messages were saved';
-                rir.view.showNotification(msg);
-            },
-            unsave: function(){
-                var conversations = rir.controller.action.conversations;
-                for(var i = 0; i < conversations.length; i++) {
-                    var conversation = conversations[i];
-                    var id = conversation.id;
-                    if(rir.cfg.saved.contains(id)) {
-                        rir.cfg.saved.remove(id);
-                        if(rir.show === "saved") {
-                            conversation.$e.slideUp(function(){
-                                conversation.$e.remove();
-                            });
-                        }
-                    }
-                }
-                
-                if(!conversations.length) return;
-                var msg = (conversations.length === 1) ? 'The message was unsaved' : 'The messages were unsaved';
-                rir.view.showNotification(msg);
             },
             markRead: function(){
                 //.rir-unread
@@ -1031,7 +999,7 @@
                     var conversation = conversations[i];
                     if(conversation.$e) {
                         conversation.$e.addClass('rir-unread');
-                        delete conversation['$e'];
+                        delete conversation.$e;
                     }
                     rir.model.setConversationStatus(conversation, false);
                 }
@@ -1054,65 +1022,9 @@
     };
     rir.model = {
         setConversationStatus: function(conversation, read) {
-            var updated = [];
-            for(var i = 0; i < conversation.messages.length; i++) {
-                if(conversation.messages[i]['new'] === read) {
-                    conversation.messages[i]['new'] = !read;
-                    updated.push(conversation.messages[i]);
-                }
-            }
-            if(updated.length > 0) {
-                rir.proxy(['rir', 'db', 'updateAll'], [db_tables.privateMessages.name, updated]);
-            }
+            rir.proxy(['rir', 'db', 'privateMessages', 'setReadStatusConversation'], [conversation.id, read]);
         },
-        getSortedContactsFromConversations: function(conversations){
-            var contacts = {};
-            for(var i = 0; i < conversations.length; i++) {
-                var conversation = conversations[i];
-                var contact = conversation.correspondent;
-                if(!contact) continue;
-                if(contact === "[deleted]") continue;
-                if(contact[0] === "#") continue;
-
-                if(!contacts[contact]) {
-                    contacts[contact] = 0;
-                }
-                contacts[contact] += 1 + (conversation.messages.length / 3);
-            }
-            var contactsArr = Object.keys(contacts);
-            contactsArr.sort(function(a, b){
-                if(contacts[a] > contacts[b]) return -1;
-                if(contacts[a] === contacts[b]) return 0;
-                if(contacts[a] < contacts[b]) return 1;
-            });
-            return contactsArr;
-        },
-        modmailFilter: function(conversations){
-            for(var i = 0; i < conversations.length; i++) {
-                var conversation = conversations[i];
-                if(conversation.modmail) {
-                    conversations.splice(i--, 1);
-                }
-            }
-        },
-        directoryFilter: function(conversations, directory){
-            if(typeof directory === "undefined") {
-                directory = rir.show;
-            }
-            
-            for(var i = 0; i < conversations.length; i++) {
-                var conversation = conversations[i];
-
-                var saved = rir.cfg.saved.contains(conversation.id);
-                var deleted = rir.cfg.deleted.contains(conversation.id);
-
-                if(directory === "saved" && !saved
-                || directory === "deleted" && !deleted
-                || directory !== "deleted" && deleted) {
-                    conversations.splice(i--, 1);
-                }
-            }
-        },
+        // TODO: Remove / Reimplement
         searchFilter: function(conversations){
             if(!rir._get.searchObj) return;
             for(var i = 0; i < conversations.length; i++) {
@@ -1122,6 +1034,7 @@
                 }
             }
         },
+        // TODO: Remove / move
         searchMatchCheck: function(conversation){
             var searchObj = rir._get.searchObj;
             if(searchObj.from && conversation.correspondent && searchObj.from.toLowerCase() === conversation.correspondent.toLowerCase()) {
@@ -1161,6 +1074,7 @@
             return false;
         },
         names: {
+            // Used to create spoof names when exporting with anonymizer enabled
             get generatedNames(){
                 var names = [];
                 var firstNames = [
@@ -1189,7 +1103,7 @@
                         names.push(firstNames[i] + ' ' + lastNames[j]);
                     }
                 }
-                return rir.model.names.generatedNames = array_shuffle(names);
+                return array_shuffle(names);
             },
             extractUsernames: function(conversations){
                 var names = [];
@@ -1230,6 +1144,7 @@
                 return copy;
             }
         },
+        // TODO: I think we can remove this?
         cloneAndSortConversations: function(conversations, oldToNew){
             if(typeof oldToNew === "undefined") {
                 oldToNew = true;
@@ -1247,6 +1162,7 @@
             }
             return clone;
         },
+        // TODO: I think we can remove this
         getConversationContexts: function(conversations){
             var contexts = [];
             for(var i = 0; i < conversations.length; i++) {
@@ -1256,6 +1172,7 @@
             }
             return contexts;
         },
+        // TODO: I think we can remove this
         removeConversationContexts: function(conversations){
             var messages = [];
             for(var i = 0; i < conversations.length; i++) {

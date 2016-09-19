@@ -11,11 +11,24 @@
     
     var res = {
         compatibility: function(){
-            res.monitorRESMailcount();
-            res.initHtml();
+            var mutationFilter = {childList: true};
+            var observer = new MutationObserver(function(mutations, observer){
+                for(var i = 0; i < mutations.length; i++) {
+                    var mutation = mutations[i];
+                    for(var j = 0; j < mutation.addedNodes.length; j++) {
+                        var node = mutation.addedNodes[j];
+                        if(node.id == "NREFloat") {
+                            res.monitorRESMailcount();
+                            res.initHtml();
+                            observer.disconnect();
+                        }
+                    }
+                }
+            });
+            observer.observe(document.body, mutationFilter);
         },
         mailCountUpdates: function(){
-            return (document.body.classList.contains('res-v4') || document.body.classList.contains('res-v5'));
+            return (document.body.classList.contains('res'));
         },
         getMailCount: function(){
             if(res.mailCountUpdates()) {
@@ -82,8 +95,21 @@
     
     var toolbox = {
         compatibility: function(){
-            toolbox.monitorToolboxMailcount();
-            toolbox.initHtml();
+            var mutationFilter = {childList: true};
+            var observer = new MutationObserver(function(mutations, observer){
+                for(var i = 0; i < mutations.length; i++) {
+                    var mutation = mutations[i];
+                    for(var j = 0; j < mutation.addedNodes.length; j++) {
+                        var node = mutation.addedNodes[j];
+                        if(node.id == "tb-bottombar") {
+                            toolbox.monitorToolboxMailcount();
+                            toolbox.initHtml();
+                            observer.disconnect();
+                        }
+                    }
+                }
+            });
+            observer.observe(document.body, mutationFilter);
         },
         monitorToolboxMailcount: function(){
             var tbMailCount = document.querySelector('#tb-mailCount');
