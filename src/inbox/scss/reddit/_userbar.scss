@@ -1,0 +1,89 @@
+#header-bottom-right#header-bottom-right {
+    @extend %gray-button-border;
+    display: flex;
+    background-color: #F2F2F2;
+    line-height: 16px;
+    padding-left: 8px;
+    padding-right: 8px;
+
+    right: 65px;
+    bottom: 8px;
+    top: auto;
+
+    #RESAnnouncementAlert {
+        display: none;
+    }
+
+    #userbarToggle {
+        background-color: #DDD;
+        border-top-left-radius: 3px;
+        border-bottom-left-radius: 3px;
+        margin-left: 5px;
+        color: #555;
+        width: 18px;
+        text-align: center;
+        padding: 0;
+        line-height: 22px;
+    }
+
+    .user{
+        /* Username */
+        > a {
+            font-size: 12px;
+        }
+        /* Karma & Username */
+        a {
+            color: #555;
+            &:hover {
+                color: #000;
+            }
+        }
+        /* Account switcher icon */
+        #RESAccountSwitcherIcon {
+            display: none;
+        }
+    }
+    a.rir-privatemessages {
+        top: 2px;
+    }
+    a.pref-lang.choice {
+        display: inline-block;
+        text-indent: -5000px;
+        overflow: hidden;
+        width: 15px;
+        height: 16px;
+        background-image: url('chrome-extension://__MSG_@@extension_id__/inbox/img/icons.png');
+        background-repeat: no-repeat;
+        background-position-x: -210px;
+        background-position-y: -1px;
+        vertical-align: bottom;
+    }
+    a.pref-lang.choice {
+        display: inline-block;
+        text-indent: -5000px;
+        overflow: hidden;
+        width: 15px;
+        height: 16px;
+        background-image: url('chrome-extension://__MSG_@@extension_id__/inbox/img/icons.png');
+        background-repeat: no-repeat;
+        background-position-x: -210px;
+        background-position-y: -1px;
+        vertical-align: bottom;
+    }
+    form.logout a {
+        display: inline-block;
+        text-indent: -5000px;
+        overflow: hidden;
+        width: 16px;
+        height: 16px;
+        background-image: url('chrome-extension://__MSG_@@extension_id__/inbox/img/icons.png');
+        background-repeat: no-repeat;
+        background-position-x: -226px;
+        background-position-y: -1px;
+        vertical-align: bottom;
+    }
+    .separator {
+        margin: 0 3px;
+        color: transparent;
+    }
+}

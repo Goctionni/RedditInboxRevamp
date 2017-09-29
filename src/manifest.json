@@ -1,0 +1,39 @@
+{
+  "name": "Reddit Inbox Revamp",
+  "version": "2.0.0",
+  "description": "Creates a new inbox for private messages in reddit. Adding features like search and save, as well as helping organize your inbox and making it lightning fast",
+  "permissions": [
+    "http://*.reddit.com/*", "https://*.reddit.com/*", "unlimitedStorage"
+  ],
+  "web_accessible_resources": [
+    "inbox/img/*", "icons/*", "manifest.json"
+  ],
+  "icons": {
+    "16": "icons/16.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*.reddit.com/*", "https://*.reddit.com/*"],
+      "js": ["global/js/constants.js", "global/js/helper.js", "global/js/defaultConfig.js", "global/js/rir-obj.js", "global/js/model/model.js", "global/js/rir-background-proxy.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["http://*.reddit.com/*", "https://*.reddit.com/*"],
+      "css": ["scanner/css/scanner.css"],
+      "js": ["scanner/js/pm-loader.js", "scanner/js/inbox-scanner.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["http://*.reddit.com/rir/*", "https://*.reddit.com/rir/*"],
+      "css": ["inbox/css/App.css"],
+      "js": ["global/lib/js/vue.min.js", "inbox/js/app.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "background": {
+    "page": "background/background.html"
+  },
+  "manifest_version": 2
+}

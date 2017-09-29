@@ -1,0 +1,27 @@
+%nice-scrollbar {
+    -webkit-background-clip: text;
+    background-color: rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease-in-out;
+    &:hover {
+        background-color: rgba(0,0,0,0.3);
+    }
+    &::-webkit-scrollbar
+    {
+        box-sizing: content-box;
+        width: 6px;
+        background-color: transparent;
+    }
+    &:hover::-webkit-scrollbar {
+        background-color: rgba(0,0,0,0.03);
+    }
+    &::-webkit-scrollbar-track
+    {
+        background-color: transparent;
+    }
+    &::-webkit-scrollbar-thumb
+    {
+        background-color: inherit;
+        border-radius: 4px;
+    }
+}
+

@@ -1,0 +1,22 @@
+%gray-button-border {
+    border: solid #CCC 1px;
+    border-radius: 3px;
+    border-bottom-width: 2px;
+    border-bottom-color: #BBB;
+}
+%gray-button {
+    @extend %gray-button-border;
+
+    background-color: #F4F4F4;
+    padding: 5px 10px;
+    margin-right: 3px;
+    color: #555;
+    transition: all ease-in-out 0.15s;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #F9F9F9;
+        border-bottom-color: #89A;
+        color: #000;
+    }
+}

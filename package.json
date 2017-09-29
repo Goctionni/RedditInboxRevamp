@@ -1,0 +1,28 @@
+{
+  "name": "reddit-inbox-revamp",
+  "description": "A better inbox for reddit",
+  "author": "Goctionni",
+  "scripts": {},
+  "dependencies": {
+    "vue": "^2.4.4"
+  },
+  "devDependencies": {
+    "browser-sync": "^2.18.12",
+    "fs": "0.0.1-security",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-file": "^0.3.0",
+    "gulp-rollup": "^2.12.0",
+    "gulp-sass": "^3.1.0",
+    "gulp-sass-bulk-import": "^1.0.1",
+    "gulp-sourcemaps": "^2.6.0",
+    "postcss": "^6.0.2",
+    "postcss-scss": "^1.0.1",
+    "posthtml-parser": "^0.2.1",
+    "posthtml-render": "^1.0.6",
+    "through2": "^2.0.3",
+    "vue-template-compiler": "^2.4.4",
+    "vue-template-es2015-compiler": "^1.5.3",
+    "yargs": "^8.0.2"
+  }
+}

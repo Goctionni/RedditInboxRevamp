@@ -1,0 +1,24 @@
+/* Remove some Reddit-elements that arent in use */
+body > div.content > #classy-error,
+.footer-parent,
+.pagename {
+    display: none;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Prepare our content area */
+.content.content {
+    margin: 0;
+    position: fixed;
+    top: 65px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    body.mod-toolbox & {
+        bottom: 23px;
+    }
+}
