@@ -27,7 +27,6 @@ export const view = {
         load: () => {
             // Figure out our route
             let route = rir.viewmodel.navigation.route;
-            console.log(route);
 
             // Set active content component
             rir.view.components.baseview.active = route.active;

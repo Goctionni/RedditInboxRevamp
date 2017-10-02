@@ -99,7 +99,6 @@
             }
         },
         mounted() {
-            console.log('mounted');
             this.contacts = [];
             this.unloadedContentSpace = this.$el.querySelector('.rir-unloaded-contacts-space');
             this.loadMore().then(() => {}, (error) => {

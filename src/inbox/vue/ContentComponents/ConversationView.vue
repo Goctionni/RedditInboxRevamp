@@ -1,21 +1,51 @@
 <template>
     <div class="rir-conversation">
         <div class="rir-loading" v-if="loading"></div>
+        <header class="rir-conversation-header">
+            <button :class="{'save-toggle': true, saved: saved }" />
+            <h2>{{ subject }}</h2>
+            <button class="export-thread">Export thread</button>
+            <button class="expand-all"></button>
+        </header>
+        <conversation-message
+            v-for="message in messages"
+            :key="message.id"
+            :author="message.author"
+            :body="message.body"
+            :body_html="message.body_html"
+            :created_utc="message.created_utc"
+            :dest="message.dest"
+            :distinguished="message.distinguished"
+            :first_message_name="message.first_message_name"
+            :id="message.id"
+            :name="message.name"
+            :new="message.new"
+            :subject="message.subject"
+            :collapsed="message.collapsed"></conversation-message>
     </div>
 </template>
 
 <script>
-    //import ConversationRow from './ConversationViews/ConversationRow.vue';
+    import ConversationMessage from './ConversationViews/ConversationMessage.vue';
 
     export default {
         data: () => ({
             loading: true,
-            conversations: [],
-            totalRows: 0
+            last_message_author: '',
+            correspondent: '',
+            subject: '',
+            last_message_summary: '',
+            last_update_at: new Date(),
+            inbox: '',
+            saved: false,
+            trash: false,
+            modmail: false,
+            unread: false,
+            messages: []
         }),
-        props: [
-            'id'
-        ],
+        props: {
+            id: String
+        },
         computed: {
         },
         methods: {
@@ -38,27 +68,48 @@
             },
             markUnread() {
                 console.error('Not yet implemented');
+            },
+            toggleSave() {
+
+            },
+            exportThread() {
+
+            },
+            expandAll() {
+
+            },
+            toggleExpandMessage(message) {
+
             }
         },
         mounted() {
-            console.log('ConversationView mounted', this.id);
-            rir.background.db.privateMessages.getConversation(this.id).then(function(result){
-                console.log(result);
-                // id
-                // last_message_author
-                // correspondent
-                // subject
-                // last_message_summary
-                // inbox
-                // saved: 0
-                // trash: 0
-                // last_update_at
-                // messages: []
-                // modmail: 0
-                // unread: false
+            rir.background.db.privateMessages.getConversation(this.id).then((conversation) => {
+                if(conversation.messages && conversation.messages.length) {
+                    for(let message of conversation.messages) {
+                        message.unread = !!message.unread;
+                        message.collapsed = message.unread;
+                    }
+                    // Sort by created_utc
+                    conversation.messages = conversation.messages.sort((a, b) => a.created_utc - b.created_utc);
+                }
+
+                this.last_message_author = conversation.last_message_author;
+                this.correspondent = conversation.correspondent;
+                this.subject = conversation.subject;
+                this.last_message_summary = conversation.last_message_summary;
+                this.last_update_at = new Date(conversation.last_update_at * 1000);
+                this.inbox = !!conversation.inbox;
+                this.saved = !!conversation.saved;
+                this.trash = !!conversation.trash;
+                this.modmail = !!conversation.modmail;
+                this.unread = !!conversation.unread;
+                this.messages = conversation.messages;
+                this.loading = false;
             });
         },
         components: {
+            ConversationMessage,
+            'conversation-message': ConversationMessage
         }
     };
 </script>
