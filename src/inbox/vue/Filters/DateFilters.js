@@ -1,7 +1,11 @@
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export const shortDateFilter = function(timestamp) {
-    const date = new Date(timestamp * 1000);
+    console.log('shortDateFilter', timestamp);
+    let date;
+    if(timestamp instanceof Date) date = timestamp;
+    else if(typeof timestamp === 'number') date = new Date(timestamp * 1000);
+
     const year = date.getFullYear();
     const day = date.getDate();
     const month = date.getMonth();
@@ -27,4 +31,36 @@ export const shortDateFilter = function(timestamp) {
     const am_pm = ((date.getHours() >= 12) ? 'pm' : 'am');
 
     return `${hour}:${minutes} ${am_pm}`;
+};
+
+export const longDateFilter = function(timestamp) {
+    let date;
+    if(timestamp instanceof Date) date = timestamp;
+    else if(typeof timestamp === 'number') date = new Date(timestamp * 1000);
+
+    const YYYY = date.getFullYear();
+    const MMM = MONTHS[date.getMonth()];
+    const D = date.getDate();
+
+    let hh = ('' + date.getHours()).padStart(2, '0');
+    let mm = ('' + date.getMinutes()).padStart(2, '0');
+    let ss = ('' + date.getSeconds()).padStart(2, '0');
+
+    return `${MMM} ${D}, ${YYYY} - ${hh}:${mm}:${ss}`;
+};
+
+export const sysDateFilter = function(timestamp) {
+    let date;
+    if(timestamp instanceof Date) date = timestamp;
+    else if(typeof timestamp === 'number') date = new Date(timestamp * 1000);
+
+    const YYYY = date.getFullYear();
+    const MM = ('' + (date.getMonth() + 1)).padStart(2, '0');
+    const DD = ('' + date.getDate()).padStart(2, '0');
+
+    let hh = ('' + date.getHours()).padStart(2, '0');
+    let mm = ('' + date.getMinutes()).padStart(2, '0');
+    let ss = ('' + date.getSeconds()).padStart(2, '0');
+
+    return `${YYYY}-${MM}-${DD}T${hh}:${mm}:${ss}`;
 };

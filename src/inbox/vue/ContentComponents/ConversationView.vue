@@ -2,7 +2,7 @@
     <div class="rir-conversation">
         <div class="rir-loading" v-if="loading"></div>
         <header class="rir-conversation-header">
-            <button :class="{'save-toggle': true, saved: saved }" />
+            <button class="save-toggle" :class="{saved: saved }"></button>
             <h2>{{ subject }}</h2>
             <button class="export-thread">Export thread</button>
             <button class="expand-all"></button>
@@ -22,11 +22,17 @@
             :new="message.new"
             :subject="message.subject"
             :collapsed="message.collapsed"></conversation-message>
+
+        <message-editor
+                title="response"
+                @send="sendMessage($event)"></message-editor>
+
     </div>
 </template>
 
 <script>
     import ConversationMessage from './ConversationViews/ConversationMessage.vue';
+    import MessageEditor from './Common/MessageEditor.vue';
 
     export default {
         data: () => ({
@@ -87,10 +93,11 @@
                 if(conversation.messages && conversation.messages.length) {
                     for(let message of conversation.messages) {
                         message.unread = !!message.unread;
-                        message.collapsed = message.unread;
+                        message.collapsed = !message.unread;
                     }
                     // Sort by created_utc
                     conversation.messages = conversation.messages.sort((a, b) => a.created_utc - b.created_utc);
+                    conversation.messages[conversation.messages.length - 1].collapsed = false;
                 }
 
                 this.last_message_author = conversation.last_message_author;
@@ -109,7 +116,7 @@
         },
         components: {
             ConversationMessage,
-            'conversation-message': ConversationMessage
+            MessageEditor
         }
     };
 </script>
@@ -121,6 +128,66 @@
         overflow: auto;
         height: 100%;
         box-sizing: border-box;
+        background-color: #FFF;
+    }
+    .rir-conversation-header {
+        height: 40px;
+        display: flex;
+        align-items: center;
+        max-width: 995px;
+
+        .save-toggle {
+            border: 0;
+            background-color: transparent;
+            cursor: pointer;
+
+            &::before {
+                content: '';
+                width: 17px;
+                height: 17px;
+                display: block;
+                background-image: url('chrome-extension://__MSG_@@extension_id__/inbox/img/icons.png');
+                background-position-x: -134px;
+                background-position-y: -1px;
+                background-repeat: no-repeat;
+                transition: background-position-y 0.5s ease-in-out;
+            }
+            &.saved::before {
+                background-position-y: -20px;
+            }
+        }
+        h2 {
+            flex: 1;
+            font-size: 18px;
+            font-weight: normal;
+            color: #222;
+        }
+        .export-thread {
+            border: 0;
+            background-color: transparent;
+            color: #888;
+            cursor: pointer;
+
+            &:hover {
+                color: #444;
+            }
+        }
+        .expand-all {
+            border: 0;
+            background-color: transparent;
+
+            &::before {
+                content: '';
+                display: block;
+                background-color: transparent;
+                background-image: url('chrome-extension://__MSG_@@extension_id__/inbox/img/icons.png');
+                background-position-x: -96px;
+                background-position-y: 0px;
+                width: 16px;
+                height: 16px;
+                background-repeat: no-repeat;
+            }
+        }
     }
 
     .rir-loading {

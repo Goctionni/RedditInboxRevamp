@@ -15,7 +15,7 @@
                 <button class="rir-ct-table" title="Table"></button>
             </div>
         </div>
-        <textarea class="rir-conversation-input rir-message-input"></textarea>
+        <textarea class="rir-conversation-input rir-message-input" v-model="message"></textarea>
         <div class="rir-response-actions">
             <input type="checkbox" id="RirShowReplyPreview" v-model="showPreview">
             <label for="RirShowReplyPreview">Show preview</label>
@@ -28,18 +28,25 @@
 
 <script>
     export default {
-        data: () => ({
-            showPreview: true
-        }),
-        props: [
-            'draft'
-        ],
+        data() {
+            return {
+                message: '',
+                showPreview: true
+            };
+        },
+        props: {
+            draft: String
+        },
         methods: {
             send() {
+                this.$emit('send', this.message);
+            },
+            apply(action) {
 
             }
         },
         mounted() {
+            if (this.draft) this.message = this.draft;
         },
         components: {
 

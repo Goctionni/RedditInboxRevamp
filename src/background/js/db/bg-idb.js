@@ -157,12 +157,12 @@ var Database = (function(){
     
     Database.prototype.clearObjectStore = function(store_name){
         let store = this.getObjectStore(store_name, db_mode.readwrite);
-        return new Promise(function(pass, fail){
+        return new Promise((pass, fail) => {
             let req = store.clear();
-            req.onsuccess = function(){
+            req.onsuccess = () => {
                 pass();
             };
-            req.onerror = function(e){
+            req.onerror = (e) => {
                 fail("Failed to remove objects in store " + store_name);
             };
         });
@@ -218,9 +218,9 @@ var Database = (function(){
                     req = store.openCursor();
                 }
 
-                var resultPromise = new Promise(function(success, error){
+                var resultPromise = new Promise((success, error) => {
                     var results = [];
-                    req.onerror = function(e){
+                    req.onerror = (e) => {
                         if(e instanceof window.DOMError && e.name === "InvalidStateError") {
                             return success(results);
                         }
@@ -228,7 +228,7 @@ var Database = (function(){
                             error("An error occured trying to fetch items.", e, req, QueryObjCopy);
                         }
                     };
-                    req.onsuccess = function(e){
+                    req.onsuccess = (e) => {
                         var cursor = e.target.result;
                         if(!cursor) return success(results);
 
@@ -271,9 +271,9 @@ var Database = (function(){
                     };
                 });
 
-                resultPromise.then(function(results){
+                resultPromise.then((results) => {
                     // Function to call when the results have been counted
-                    function resultsCounted(numResults) {
+                    const resultsCounted = (numResults) => {
                         // Check if we have to sort the results
                         if(requiresSorting) results = db_helper.sortResults(results, index);
 
@@ -286,36 +286,35 @@ var Database = (function(){
                         // Our results have been counted, filtered, sorted and limited as needed
                         // We can now give a response!
                         pass({ results: results, total: numResults, start: originalStart });
-                    }
+                    };
                     
                     // Count results
-                    (function(){
-                        // Count the results
-                        if(where.length + index.length > 1) {
-                            // If there is either an index and a where clause,
-                            // Or multiple of either, we won't have used queryObj.limit
-                            // Therefor we can simply count our current results
-                            resultsCounted(results.length);
+                    // Count the results
+                    if(where.length + index.length > 1) {
+                        // If there is either an index and a where clause,
+                        // Or multiple of either, we won't have used queryObj.limit
+                        // Therefor we can simply count our current results
+                        resultsCounted(results.length);
+                    }
+                    else {
+                        var countReq;
+                        var newStore = this.getObjectStore(queryObj.table, db_mode.readonly);
+                        if(where.length === 1) {
+                            countReq = (indexName == newStore.keyPath)
+                                ? newStore.count(keyRange)
+                                : newStore.index(indexName).count(keyRange);
                         }
                         else {
-                            var countReq;
-                            if(where.length === 1) {
-                                countReq = (indexName == store.keyPath)
-                                    ? store.count(keyRange)
-                                    : store.index(indexName).count(keyRange);
-                            }
-                            else {
-                                countReq = store.count();
-                            }
-                            countReq.onsuccess = function(e) {
-                                resultsCounted(e.target.result);
-                            };
-                            countReq.onerror = function(e){
-                                fail("An error occured trying to count items in result set", e, countReq, queryObj);
-                            };
+                            countReq = newStore.count();
                         }
-                    })();
-                }, function(){
+                        countReq.onsuccess = (e) => {
+                            resultsCounted(e.target.result);
+                        };
+                        countReq.onerror = (e) => {
+                            fail("An error occured trying to count items in result set", e, countReq, queryObj);
+                        };
+                    }
+                }, () => {
                     fail(arguments); // resultPromise.fail
                 });
             })(queryObj);
@@ -324,13 +323,13 @@ var Database = (function(){
     
     Database.prototype.add = function(store_name, object){
         var store = this.getObjectStore(store_name, db_mode.readwrite);
-        return new Promise(function(pass, fail){
+        return new Promise((pass, fail) => {
             var req = store.add(object);
-            req.onsuccess = function(e){
+            req.onsuccess = (e) => {
                 pass(1);
             };
-            req.onerror = function(e){
-                if(this.error.message === "Key already exists in the object store.") {
+            req.onerror = (e) => {
+                if(req.error.message === "Key already exists in the object store.") {
                     pass(0);
                 }
                 else {
@@ -342,12 +341,12 @@ var Database = (function(){
     
     Database.prototype.update = function(store_name, object){
         var store = this.getObjectStore(store_name, db_mode.readwrite);
-        return new Promise(function(pass, fail){
+        return new Promise((pass, fail) => {
             var req = store.put(object);
-            req.onsuccess = function(e){
+            req.onsuccess = (e) => {
                 pass();
             };
-            req.onerror = function(e){
+            req.onerror = (e) => {
                 fail("Failed to update obj in DB", e, req, object);
             };
         });

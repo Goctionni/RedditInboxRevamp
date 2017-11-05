@@ -11,7 +11,7 @@
             <span class="rir-subject">{{ conversation.subject }}</span>
             <span class="rir-text">{{ lastMessageSummary }}</span>
         </div>
-        <div class="rir-datetime">{{ conversation.last_update_at | dateShort }}</div>
+        <div class="rir-datetime">{{ conversation.last_update_at | date-short }}</div>
     </div>
 </template>
 
@@ -118,7 +118,6 @@
         }
 
         &.rir-saved::before {
-
             background-position-y: -20px;
         }
     }
