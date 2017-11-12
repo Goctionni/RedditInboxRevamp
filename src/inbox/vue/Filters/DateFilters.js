@@ -1,7 +1,6 @@
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 export const shortDateFilter = function(timestamp) {
-    console.log('shortDateFilter', timestamp);
     let date;
     if(timestamp instanceof Date) date = timestamp;
     else if(typeof timestamp === 'number') date = new Date(timestamp * 1000);

@@ -30,7 +30,7 @@ gulp.task('app-js', function(cb){
             treeshake: false
         }).on('error', (e) => {
             console.error("\x1b[31m\x1b[1m%s \x1b[2m%s\x1b[0m", '[ERROR app-js]', e.plugin);
-            console.log(e.frame);
+            // console.log(e.frame);
             console.log(e.loc);
             console.log(e.stack);
         }))

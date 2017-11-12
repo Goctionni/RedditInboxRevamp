@@ -24,7 +24,7 @@
             :collapsed="message.collapsed"></conversation-message>
 
         <message-editor
-                title="response"
+                title="Response"
                 @send="sendMessage($event)"></message-editor>
 
     </div>

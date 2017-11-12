@@ -2,7 +2,7 @@
     <div class="rir-conversation-row" :class="{'rir-unread': conversation.unread}" @click="viewConversation()">
         <div class="rir-checkbox">
             <input type="checkbox" v-model="conversation.checked" :id="'rir-cb-' + conversation.id">
-            <label :for="'rir-cb-' + conversation.id"></label>
+            <label :for="'rir-cb-' + conversation.id" @click.prevent.stop="toggleCheck()"></label>
         </div>
         <div :class="['rir-last-author', lastAuthorClass]"></div>
         <div :class="['rir-save-toggle', conversation.saved ? 'rir-saved' : '']" @click="toggleSave()"></div>
@@ -37,6 +37,9 @@
             'conversation'
         ],
         methods: {
+            toggleCheck() {
+                this.conversation.checked = !this.conversation.checked;
+            },
             toggleSave(){
                 this.conversation.saved = !this.conversation.saved;
                 rir.background.db.privateMessages.setSaveStatusConversation(this.conversation.id, this.conversation.saved);
