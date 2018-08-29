@@ -1,57 +1,21 @@
 <template>
     <div class="rir-conversation">
         <div class="rir-loading" v-if="loading"></div>
-        <header class="rir-conversation-header">
-            <button class="save-toggle" :class="{saved: saved }"></button>
-            <h2>{{ subject }}</h2>
-            <button class="export-thread">Export thread</button>
-            <button class="expand-all"></button>
-        </header>
-        <conversation-message
-            v-for="message in messages"
-            :key="message.id"
-            :author="message.author"
-            :body="message.body"
-            :body_html="message.body_html"
-            :created_utc="message.created_utc"
-            :dest="message.dest"
-            :distinguished="message.distinguished"
-            :first_message_name="message.first_message_name"
-            :id="message.id"
-            :name="message.name"
-            :new="message.new"
-            :subject="message.subject"
-            :collapsed="message.collapsed"></conversation-message>
-
-        <message-editor
-                title="Response"
-                @send="sendMessage($event)"></message-editor>
-
     </div>
 </template>
 
 <script>
-    import ConversationMessage from './ConversationViews/ConversationMessage.vue';
-    import MessageEditor from './Common/MessageEditor.vue';
+    //import ConversationRow from './ConversationViews/ConversationRow.vue';
 
     export default {
         data: () => ({
             loading: true,
-            last_message_author: '',
-            correspondent: '',
-            subject: '',
-            last_message_summary: '',
-            last_update_at: new Date(),
-            inbox: '',
-            saved: false,
-            trash: false,
-            modmail: false,
-            unread: false,
-            messages: []
+            conversations: [],
+            totalRows: 0
         }),
-        props: {
-            id: String
-        },
+        props: [
+            'id'
+        ],
         computed: {
         },
         methods: {
@@ -74,49 +38,26 @@
             },
             markUnread() {
                 console.error('Not yet implemented');
-            },
-            toggleSave() {
-
-            },
-            exportThread() {
-
-            },
-            expandAll() {
-
-            },
-            toggleExpandMessage(message) {
-
             }
         },
         mounted() {
-            rir.background.db.privateMessages.getConversation(this.id).then((conversation) => {
-                if(conversation.messages && conversation.messages.length) {
-                    for(let message of conversation.messages) {
-                        message.unread = !!message.unread;
-                        message.collapsed = !message.unread;
-                    }
-                    // Sort by created_utc
-                    conversation.messages = conversation.messages.sort((a, b) => a.created_utc - b.created_utc);
-                    conversation.messages[conversation.messages.length - 1].collapsed = false;
-                }
-
-                this.last_message_author = conversation.last_message_author;
-                this.correspondent = conversation.correspondent;
-                this.subject = conversation.subject;
-                this.last_message_summary = conversation.last_message_summary;
-                this.last_update_at = new Date(conversation.last_update_at * 1000);
-                this.inbox = !!conversation.inbox;
-                this.saved = !!conversation.saved;
-                this.trash = !!conversation.trash;
-                this.modmail = !!conversation.modmail;
-                this.unread = !!conversation.unread;
-                this.messages = conversation.messages;
-                this.loading = false;
+            rir.background.db.privateMessages.getConversation(this.id).then(function(result){
+                console.log(`ConversationView.mounted(), getConversation(${this.id})`, result);
+                // id
+                // last_message_author
+                // correspondent
+                // subject
+                // last_message_summary
+                // inbox
+                // saved: 0
+                // trash: 0
+                // last_update_at
+                // messages: []
+                // modmail: 0
+                // unread: false
             });
         },
         components: {
-            ConversationMessage,
-            MessageEditor
         }
     };
 </script>
@@ -128,66 +69,6 @@
         overflow: auto;
         height: 100%;
         box-sizing: border-box;
-        background-color: #FFF;
-    }
-    .rir-conversation-header {
-        height: 40px;
-        display: flex;
-        align-items: center;
-        max-width: 995px;
-
-        .save-toggle {
-            border: 0;
-            background-color: transparent;
-            cursor: pointer;
-
-            &::before {
-                content: '';
-                width: 17px;
-                height: 17px;
-                display: block;
-                background-image: url('chrome-extension://__MSG_@@extension_id__/inbox/img/icons.png');
-                background-position-x: -134px;
-                background-position-y: -1px;
-                background-repeat: no-repeat;
-                transition: background-position-y 0.5s ease-in-out;
-            }
-            &.saved::before {
-                background-position-y: -20px;
-            }
-        }
-        h2 {
-            flex: 1;
-            font-size: 18px;
-            font-weight: normal;
-            color: #222;
-        }
-        .export-thread {
-            border: 0;
-            background-color: transparent;
-            color: #888;
-            cursor: pointer;
-
-            &:hover {
-                color: #444;
-            }
-        }
-        .expand-all {
-            border: 0;
-            background-color: transparent;
-
-            &::before {
-                content: '';
-                display: block;
-                background-color: transparent;
-                background-image: url('chrome-extension://__MSG_@@extension_id__/inbox/img/icons.png');
-                background-position-x: -96px;
-                background-position-y: 0px;
-                width: 16px;
-                height: 16px;
-                background-repeat: no-repeat;
-            }
-        }
     }
 
     .rir-loading {

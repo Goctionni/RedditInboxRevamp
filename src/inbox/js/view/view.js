@@ -1,4 +1,4 @@
-import { shortDateFilter, longDateFilter, sysDateFilter } from '../../vue/Filters/DateFilters.js';
+import { shortDateFilter } from '../../vue/Filters/DateFilters.js';
 
 import BaseView from '../../vue/BaseView.vue';
 import SearchBar from '../../vue/UIComponents/SearchBar.vue';
@@ -27,6 +27,7 @@ export const view = {
         load: () => {
             // Figure out our route
             let route = rir.viewmodel.navigation.route;
+            console.log({ route });
 
             // Set active content component
             rir.view.components.baseview.active = route.active;
@@ -91,9 +92,7 @@ export const view = {
         },
         initVue() {
             // Setup global filters
-            Vue.filter('date-short', shortDateFilter);
-            Vue.filter('date-long', longDateFilter);
-            Vue.filter('date-sys', sysDateFilter);
+            Vue.filter('dateShort', shortDateFilter);
 
             // Initialize Vue BaseView and mount it
             rir.view.components.baseview = new (Vue.extend(BaseView))().$mount();

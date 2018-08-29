@@ -41,21 +41,6 @@ function gulpVuejsComponent() {
         }
     }
 
-    function filterRenderFunc(func) {
-        // Generate random temporary function name
-        const funcNameChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        let funcName = '';
-        while (funcName.length < 10) {
-            funcName += funcNameChars[Math.floor(funcNameChars.length * Math.random())];
-        }
-        // Generate filtered render func
-        let unfiltered = `function ${funcName}(){ ${func} }`;
-        let filtered = es2015compiler(unfiltered);
-        // Make function anonymous again
-        filtered = filtered.replace(funcName, '');
-        return filtered;
-    }
-
     function scopeTemplateHTML(templateHTML, filename) {
         const scopeAttributes = {};
         const fileHash = Math.abs(str2hash(filename)).toString(36);
@@ -73,18 +58,15 @@ function gulpVuejsComponent() {
         if(hasScopedStyle) templateHTML = scopeTemplateHTML(templateHTML, filename);
 
         let compiled = compiler.compile(templateHTML);
-        // let funcs = [ ... new Set(compiled.render.match(/_[a-z]\(/gi))];
+        //let funcs = [ ... new Set(compiled.render.match(/_[a-z]\(/gi))];
         // This will remove the with(this) from the render func
-        let renderFunc = filterRenderFunc(compiled.render);
+        let renderFunc = es2015compiler('function render(){ ' + compiled.render + '}');
 
         let componentStartString = 'export default {';
         let componentStart = componentDef.script.content.indexOf(componentStartString);
         let script = componentDef.script.content.substr(0, componentStart + componentStartString.length);
         script += "\n        render: " + renderFunc + ",";
-        if (compiled.staticRenderFns.length > 0) {
-            let staticRenderFuncs = compiled.staticRenderFns.map(filterRenderFunc);
-            script += "\n        staticRenderFns: [" + staticRenderFuncs.join(',') + "],";
-        }
+        script += "\n        staticRenderFns: [" + compiled.staticRenderFns.join(',') + "],";
         script += componentDef.script.content.substr(componentStart + componentStartString.length);
 
         return script
